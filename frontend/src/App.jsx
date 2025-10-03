@@ -7,7 +7,10 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Cursos from "./pages/Cursos";
-
+import CrearCurso from "./pages/CrearCurso";
+import DocenteRoute from "./components/DocenteRoute";
+import Inscripciones from "./pages/Inscripciones";
+import Clases from "./pages/Clases";
 function App() {
   return (
     <AuthProvider>
@@ -22,6 +25,32 @@ function App() {
           <Route path="/cursos" element={
             <ProtectedRoute><Cursos /></ProtectedRoute>
           } />
+          <Route path="/crear-curso"
+            element={
+              <ProtectedRoute>
+                <DocenteRoute>
+                  <CrearCurso />
+                </DocenteRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/inscripciones"
+            element={
+              <ProtectedRoute>
+                <DocenteRoute>
+                  <Inscripciones />
+                </DocenteRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/cursos/:cursoId/clases"
+            element={
+              <ProtectedRoute>
+                <Clases />
+              </ProtectedRoute>
+            }
+          />
+          
         </Routes>
     
     </AuthProvider>

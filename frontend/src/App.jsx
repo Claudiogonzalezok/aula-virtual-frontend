@@ -11,6 +11,9 @@ import CrearCurso from "./pages/CrearCurso";
 import DocenteRoute from "./components/DocenteRoute";
 import Inscripciones from "./pages/Inscripciones";
 import Clases from "./pages/Clases";
+import CrearExamen from "./pages/CrearExamen";
+import ListaExamenes from "./pages/ListaExamenes";
+import RendirExamen from "./pages/RendirExamen";
 function App() {
   return (
     <AuthProvider>
@@ -43,6 +46,22 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/cursos/:cursoId/examenes/nuevo"
+            element={
+              <ProtectedRoute>
+                <CrearExamen />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/cursos/:cursoId/examenes" element={<ListaExamenes />} />
+
+          <Route path="/examenes/:examenId/rendir"
+            element={
+              <ProtectedRoute>
+                <RendirExamen />
+              </ProtectedRoute>
+            }
+          />          
           <Route path="/cursos/:cursoId/clases"
             element={
               <ProtectedRoute>

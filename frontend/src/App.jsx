@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import DashboardLayout from "./components/DashboardLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -14,11 +15,20 @@ import Clases from "./pages/Clases";
 import CrearExamen from "./pages/CrearExamen";
 import ListaExamenes from "./pages/ListaExamenes";
 import RendirExamen from "./pages/RendirExamen";
+import MisNotas from "./pages/MisNotas";
+import NotasCurso from "./pages/NotasCurso";
+import ReporteCurso from "./pages/ReporteCurso";
+import ChatCurso from "./components/ChatCurso";
+import Notificaciones from "./components/Notificaciones";
+
 function App() {
   return (
+    
     <AuthProvider>
       
         <Routes>
+          
+        <Route path="/" element={<DashboardLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
@@ -69,7 +79,40 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
+                    // Alumno
+          <Route path="/mis-notas" element={
+            <ProtectedRoute>
+              <MisNotas />
+            </ProtectedRoute>
+          } />
+
+          // Docente/Admin
+          <Route path="/notas-curso/:cursoId" element={
+            <ProtectedRoute>
+              <DocenteRoute>
+                <NotasCurso />
+              </DocenteRoute>
+            </ProtectedRoute>
+          } />
+
+                    // Docente/Admin
+          <Route path="/reporte-curso/:cursoId" element={
+            <ProtectedRoute>
+              <DocenteRoute>
+                <ReporteCurso />
+              </DocenteRoute>
+            </ProtectedRoute>
+          } />
+
+                    // Alumno/Docente/Admin
+          <Route path="/curso/:cursoId/chat" element={
+            <ProtectedRoute>
+              <ChatCurso />
+            </ProtectedRoute>
+          } />
+
+          </Route>      
         </Routes>
     
     </AuthProvider>

@@ -1,35 +1,49 @@
-import { useEffect, useState } from "react";
+// src/components/Notificaciones.js
+import { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { io } from "socket.io-client";
+import { Link } from "react-router-dom";
 
-const socket = io("http://localhost:4000"); // 🔹 Cambiá si tu backend está en otro dominio
+const socket = io("http://localhost:5000"); // URL de tu backend
 
-const Notificaciones = () => {
+const Notificaciones = ({ cursoId }) => {
+  const { usuario } = useContext(AuthContext);
   const [notificaciones, setNotificaciones] = useState([]);
 
   useEffect(() => {
-    socket.on("nuevaNotificacion", (data) => {
-      console.log("📢 Nueva notificación:", data);
-      setNotificaciones((prev) => [data, ...prev]);
+    socket.emit("joinCourse", cursoId);
+
+    socket.on("notificacion", (n) => {
+      setNotificaciones((prev) => [n, ...prev]);
     });
 
-    return () => {
-      socket.off("nuevaNotificacion");
-    };
-  }, []);
+    return () => socket.off("notificacion");
+  }, [cursoId]);
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-      {notificaciones.map((n, i) => (
-        <div
-          key={i}
-          className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded shadow-lg animate-fade-in"
-        >
-          <strong>{n.titulo || "Notificación"}</strong>
-          <p>{n.mensaje}</p>
-        </div>
-      ))}
+    <div className="p-2 border rounded max-w-md mx-auto mb-4">
+      <h3 className="font-bold mb-2">Notificaciones</h3>
+      {notificaciones.length === 0 ? (
+        <p className="text-gray-500">No hay notificaciones</p>
+      ) : (
+        <ul>
+          {notificaciones.map((n, i) => (
+            <li key={i} className="border-b py-1">
+              {n.tipo === "examen" ? (
+                <Link to={`/examenes/${n.examenId}/rendir`} className="text-blue-600">
+                  {n.mensaje}
+                </Link>
+              ) : (
+                n.mensaje
+              )}
+              <span className="text-gray-400 text-xs ml-2">({new Date(n.fecha).toLocaleTimeString()})</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
 
 export default Notificaciones;
+

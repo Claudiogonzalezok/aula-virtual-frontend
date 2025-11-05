@@ -1,120 +1,119 @@
-// src/App.js
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+// src/App.jsx
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DocenteRoute from "./components/DocenteRoute";
 
+// Layout
 import DashboardLayout from "./components/DashboardLayout";
+
+// Páginas principales
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import Cursos from "./pages/Cursos";
-import CrearCurso from "./pages/CrearCurso";
-import DocenteRoute from "./components/DocenteRoute";
-import Inscripciones from "./pages/Inscripciones";
-import Clases from "./pages/Clases";
-import CrearExamen from "./pages/CrearExamen";
-import ListaExamenes from "./pages/ListaExamenes";
-import RendirExamen from "./pages/RendirExamen";
-import MisNotas from "./pages/MisNotas";
-import NotasCurso from "./pages/NotasCurso";
-import ReporteCurso from "./pages/ReporteCurso";
-import ChatCurso from "./components/ChatCurso";
-import Notificaciones from "./components/Notificaciones";
+import DashboardInicio from "./pages/DashboardInicio";
+
+// Gestión de Usuarios
+import UsuariosList from "./pages/Usuarios/UsuariosList";
+import UsuarioEdit from "./pages/Usuarios/UsuarioEdit";
+import UsuarioForm from "./pages/Usuarios/UsuarioForm";
+
+// Gestión de Cursos
+import CursosList from "./pages/Cursos/CursosList";
+import CursoForm from "./pages/Cursos/CursoForm";
+import CourseDetail from "./pages/Cursos/CourseDetail";
 
 function App() {
   return (
-    
     <AuthProvider>
-      
+      <BrowserRouter>
         <Routes>
-          
-        <Route path="/" element={<DashboardLayout />}>
+          {/* --- RUTA RAÍZ - Redirección --- */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+
+          {/* --- RUTAS PÚBLICAS --- */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          <Route path="/dashboard" element={
-            <ProtectedRoute><Dashboard /></ProtectedRoute>
-          } />
-          <Route path="/cursos" element={
-            <ProtectedRoute><Cursos /></ProtectedRoute>
-          } />
-          <Route path="/crear-curso"
+          {/* --- RUTAS PROTEGIDAS (Dashboard) --- */}
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            {/* Página principal del dashboard */}
+            <Route index element={<DashboardInicio />} />
+
+            {/* ========== GESTIÓN DE USUARIOS ========== */}
+            <Route
+              path="usuarios"
+              element={
                 <DocenteRoute>
-                  <CrearCurso />
+                  <UsuariosList />
                 </DocenteRoute>
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/inscripciones"
-            element={
-              <ProtectedRoute>
+              }
+            />
+            <Route
+              path="usuarios/nuevo"
+              element={
                 <DocenteRoute>
-                  <Inscripciones />
+                  <UsuarioForm />
                 </DocenteRoute>
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/cursos/:cursoId/examenes/nuevo"
-            element={
-              <ProtectedRoute>
-                <CrearExamen />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/cursos/:cursoId/examenes" element={<ListaExamenes />} />
+              }
+            />
+            <Route
+              path="usuarios/editar/:id"
+              element={
+                <DocenteRoute>
+                  <UsuarioEdit />
+                </DocenteRoute>
+              }
+            />
 
-          <Route path="/examenes/:examenId/rendir"
-            element={
-              <ProtectedRoute>
-                <RendirExamen />
-              </ProtectedRoute>
-            }
-          />          
-          <Route path="/cursos/:cursoId/clases"
-            element={
-              <ProtectedRoute>
-                <Clases />
-              </ProtectedRoute>
-            }
-          />
+            {/* ========== GESTIÓN DE CURSOS ========== */}
+            <Route
+              path="cursos"
+              element={
+                <ProtectedRoute>
+                  <CursosList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="cursos/nuevo"
+              element={
+                <DocenteRoute>
+                  <CursoForm />
+                </DocenteRoute>
+              }
+            />
+            <Route
+              path="cursos/editar/:id"
+              element={
+                <DocenteRoute>
+                  <CursoForm />
+                </DocenteRoute>
+              }
+            />
+            <Route
+              path="cursos/:id"
+              element={
+                <ProtectedRoute>
+                  <CourseDetail />
+                </ProtectedRoute>
+              }
+            />
 
-                    // Alumno
-          <Route path="/mis-notas" element={
-            <ProtectedRoute>
-              <MisNotas />
-            </ProtectedRoute>
-          } />
+            {/* ========== OTRAS RUTAS FUTURAS ========== */}
+            {/* Aquí puedes agregar: Inscripciones, Exámenes, Tareas, etc. */}
+          </Route>
 
-          // Docente/Admin
-          <Route path="/notas-curso/:cursoId" element={
-            <ProtectedRoute>
-              <DocenteRoute>
-                <NotasCurso />
-              </DocenteRoute>
-            </ProtectedRoute>
-          } />
-
-                    // Docente/Admin
-          <Route path="/reporte-curso/:cursoId" element={
-            <ProtectedRoute>
-              <DocenteRoute>
-                <ReporteCurso />
-              </DocenteRoute>
-            </ProtectedRoute>
-          } />
-
-                    // Alumno/Docente/Admin
-          <Route path="/curso/:cursoId/chat" element={
-            <ProtectedRoute>
-              <ChatCurso />
-            </ProtectedRoute>
-          } />
-
-          </Route>      
+          {/* --- RUTA 404 - Página no encontrada --- */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-    
+      </BrowserRouter>
     </AuthProvider>
   );
 }

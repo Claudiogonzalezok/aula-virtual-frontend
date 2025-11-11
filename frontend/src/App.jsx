@@ -22,6 +22,13 @@ import CursosList from "./pages/Cursos/CursosList";
 import CursoForm from "./pages/Cursos/CursoForm";
 import CourseDetail from "./pages/Cursos/CourseDetail";
 
+// Gestión de Clases
+import MisClases from "./pages/Clases/MisClases";
+
+import ListaExamenes from "./pages/Examenes/ListaExamenes";
+import FormularioExamen from "./pages/Examenes/FormularioExamen";
+import RealizarExamen from "./pages/Examenes/RealizarExamen";
+
 function App() {
   return (
     <AuthProvider>
@@ -102,6 +109,50 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CourseDetail />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ========== GESTIÓN DE CLASES ========== */}
+            <Route
+              path="clases"
+              element={
+                <DocenteRoute>
+                  <MisClases />
+                </DocenteRoute>
+              }
+            />
+
+            {/* ========== GESTIÓN DE EXÁMENES ========== */}
+            <Route
+              path="examenes"
+              element={
+                <ProtectedRoute>
+                  <ListaExamenes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="examenes/crear"
+              element={
+                <DocenteRoute>
+                  <FormularioExamen />
+                </DocenteRoute>
+              }
+            />
+            <Route
+              path="examenes/:id/editar"
+              element={
+                <DocenteRoute>
+                  <FormularioExamen />
+                </DocenteRoute>
+              }
+            />
+            <Route
+              path="examenes/:id/realizar"
+              element={
+                <ProtectedRoute>
+                  <RealizarExamen />
                 </ProtectedRoute>
               }
             />

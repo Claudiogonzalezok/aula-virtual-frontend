@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import {
   Table,
   Button,
@@ -13,6 +13,7 @@ import {
 } from "react-bootstrap";
 import API from "../../services/api";
 import { Link, useLocation } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 const CursosList = () => {
   const [cursos, setCursos] = useState([]);
@@ -21,6 +22,7 @@ const CursosList = () => {
   const [cursoSeleccionado, setCursoSeleccionado] = useState(null);
   const [toast, setToast] = useState({ show: false, mensaje: "", tipo: "success" });
   const [vistaTabla, setVistaTabla] = useState(true);
+  const { usuario } = useContext(AuthContext);
   const location = useLocation();
 
   // Función para cargar cursos
@@ -54,7 +56,7 @@ const CursosList = () => {
     }
   }, [location.state]);
 
-  // Eliminar curso
+  // Eliminar curso (solo admin)
   const eliminarCurso = async () => {
     if (!cursoSeleccionado) return;
     try {
@@ -63,10 +65,24 @@ const CursosList = () => {
       setToast({ show: true, mensaje: "Curso eliminado correctamente", tipo: "success" });
     } catch (error) {
       console.error("Error al eliminar curso:", error);
-      setToast({ show: true, mensaje: "Error al eliminar curso", tipo: "danger" });
+      const mensaje = error.response?.data?.msg || "Error al eliminar curso";
+      setToast({ show: true, mensaje, tipo: "danger" });
     } finally {
       setShowConfirm(false);
     }
+  };
+
+  // 🆕 Verificar si el usuario puede editar un curso específico
+  const puedeEditarCurso = (curso) => {
+    if (usuario?.rol === "admin") return true;
+    // Docentes NO pueden editar cursos (solo gestionar clases dentro del curso)
+    return false;
+  };
+
+  // 🆕 Verificar si el usuario puede eliminar un curso específico
+  const puedeEliminarCurso = (curso) => {
+    // Solo admin puede eliminar
+    return usuario?.rol === "admin";
   };
 
   // Obtener badge de estado
@@ -91,7 +107,9 @@ const CursosList = () => {
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold">Gestión de Cursos</h2>
+        <h2 className="fw-bold">
+          {usuario?.rol === "docente" ? "Mis Cursos" : "Gestión de Cursos"}
+        </h2>
         <div>
           <Button
             variant={vistaTabla ? "primary" : "outline-primary"}
@@ -109,11 +127,14 @@ const CursosList = () => {
           >
             🎴 Tarjetas
           </Button>
-          <Link to="/dashboard/cursos/nuevo">
-            <Button variant="success" className="shadow-sm">
-              ➕ Nuevo Curso
-            </Button>
-          </Link>
+          {/* Solo admin puede crear cursos */}
+          {usuario?.rol === "admin" && (
+            <Link to="/dashboard/cursos/nuevo">
+              <Button variant="success" className="shadow-sm">
+                ➕ Nuevo Curso
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -132,7 +153,10 @@ const CursosList = () => {
                   <th>Código</th>
                   <th>Título</th>
                   <th>Docente</th>
-                  <th>Alumnos</th>
+                  {/* 🆕 Solo admin y docente ven cantidad de alumnos */}
+                  {(usuario?.rol === "admin" || usuario?.rol === "docente") && (
+                    <th>Alumnos</th>
+                  )}
                   <th>Inicio</th>
                   <th>Estado</th>
                   <th>Acciones</th>
@@ -142,7 +166,9 @@ const CursosList = () => {
                 {cursos.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="text-center text-muted">
-                      No hay cursos disponibles.
+                      {usuario?.rol === "docente" 
+                        ? "No tienes cursos asignados."
+                        : "No hay cursos disponibles."}
                     </td>
                   </tr>
                 ) : (
@@ -153,9 +179,11 @@ const CursosList = () => {
                       </td>
                       <td>{curso.titulo}</td>
                       <td>{curso.docente?.nombre}</td>
-                      <td className="text-center">
-                        <Badge bg="info">{curso.alumnos?.length || 0}</Badge>
-                      </td>
+                      {(usuario?.rol === "admin" || usuario?.rol === "docente") && (
+                        <td className="text-center">
+                          <Badge bg="info">{curso.alumnos?.length || 0}</Badge>
+                        </td>
+                      )}
                       <td>{formatearFecha(curso.fechaInicio)}</td>
                       <td>
                         <Badge bg={getBadgeEstado(curso.estado)}>
@@ -163,26 +191,35 @@ const CursosList = () => {
                         </Badge>
                       </td>
                       <td>
+                        {/* Botón VER - Todos pueden ver */}
                         <Link to={`/dashboard/cursos/${curso._id}`}>
                           <Button variant="info" size="sm" className="me-2">
                             👁️ Ver
                           </Button>
                         </Link>
-                        <Link to={`/dashboard/cursos/editar/${curso._id}`}>
-                          <Button variant="primary" size="sm" className="me-2">
-                            ✏️ Editar
+                        
+                        {/* Botón EDITAR - Solo admin */}
+                        {puedeEditarCurso(curso) && (
+                          <Link to={`/dashboard/cursos/editar/${curso._id}`}>
+                            <Button variant="primary" size="sm" className="me-2">
+                              ✏️ Editar
+                            </Button>
+                          </Link>
+                        )}
+                        
+                        {/* Botón ELIMINAR - Solo admin */}
+                        {puedeEliminarCurso(curso) && (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => {
+                              setCursoSeleccionado(curso);
+                              setShowConfirm(true);
+                            }}
+                          >
+                            🗑️ Eliminar
                           </Button>
-                        </Link>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => {
-                            setCursoSeleccionado(curso);
-                            setShowConfirm(true);
-                          }}
-                        >
-                          🗑️ Eliminar
-                        </Button>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -194,7 +231,9 @@ const CursosList = () => {
             <Row>
               {cursos.length === 0 ? (
                 <Col xs={12} className="text-center text-muted my-5">
-                  No hay cursos disponibles.
+                  {usuario?.rol === "docente" 
+                    ? "No tienes cursos asignados."
+                    : "No hay cursos disponibles."}
                 </Col>
               ) : (
                 cursos.map((curso) => (
@@ -222,38 +261,52 @@ const CursosList = () => {
                               👨‍🏫 {curso.docente?.nombre}
                             </small>
                             <br />
-                            <small className="text-muted">
-                              👥 {curso.alumnos?.length || 0} alumnos
-                            </small>
-                            <br />
+                            {/* 🆕 Solo admin y docente ven cantidad de alumnos */}
+                            {(usuario?.rol === "admin" || usuario?.rol === "docente") && (
+                              <>
+                                <small className="text-muted">
+                                  👥 {curso.alumnos?.length || 0} alumnos
+                                </small>
+                                <br />
+                              </>
+                            )}
                             <small className="text-muted">
                               📅 {formatearFecha(curso.fechaInicio)} - {formatearFecha(curso.fechaFin)}
                             </small>
                           </div>
                           <div className="d-grid gap-2">
+                            {/* Botón VER - Todos pueden ver */}
                             <Link to={`/dashboard/cursos/${curso._id}`}>
                               <Button variant="info" size="sm" className="w-100">
                                 👁️ Ver Detalles
                               </Button>
                             </Link>
-                            <div className="d-flex gap-2">
-                              <Link to={`/dashboard/cursos/editar/${curso._id}`} className="flex-fill">
-                                <Button variant="primary" size="sm" className="w-100">
-                                  ✏️ Editar
-                                </Button>
-                              </Link>
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                className="flex-fill"
-                                onClick={() => {
-                                  setCursoSeleccionado(curso);
-                                  setShowConfirm(true);
-                                }}
-                              >
-                                🗑️
-                              </Button>
-                            </div>
+                            
+                            {/* Botones EDITAR y ELIMINAR - Solo admin */}
+                            {(puedeEditarCurso(curso) || puedeEliminarCurso(curso)) && (
+                              <div className="d-flex gap-2">
+                                {puedeEditarCurso(curso) && (
+                                  <Link to={`/dashboard/cursos/editar/${curso._id}`} className="flex-fill">
+                                    <Button variant="primary" size="sm" className="w-100">
+                                      ✏️ Editar
+                                    </Button>
+                                  </Link>
+                                )}
+                                {puedeEliminarCurso(curso) && (
+                                  <Button
+                                    variant="danger"
+                                    size="sm"
+                                    className={puedeEditarCurso(curso) ? "flex-fill" : "w-100"}
+                                    onClick={() => {
+                                      setCursoSeleccionado(curso);
+                                      setShowConfirm(true);
+                                    }}
+                                  >
+                                    🗑️
+                                  </Button>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </Card.Body>
@@ -266,7 +319,7 @@ const CursosList = () => {
         </>
       )}
 
-      {/* Modal de confirmación */}
+      {/* Modal de confirmación - Solo admin */}
       <Modal show={showConfirm} onHide={() => setShowConfirm(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Confirmar eliminación</Modal.Title>

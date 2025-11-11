@@ -196,18 +196,9 @@ const AlumnoDashboard = ({ usuario }) => {
                             <small className="text-muted">{progreso}%</small>
                           </div>
                           <ProgressBar 
-                            now={progreso} 
-                            variant="purple"
-                            style={{ backgroundColor: "#e9ecef" }}
-                          >
-                            <div 
-                              style={{ 
-                                width: `${progreso}%`, 
-                                backgroundColor: "#6f42c1",
-                                height: "100%" 
-                              }} 
-                            />
-                          </ProgressBar>
+                            now={progreso}
+                            className="custom-progress"
+                          />
                         </div>
                         <div className="d-flex gap-2">
                           <Link 
@@ -252,6 +243,12 @@ const AlumnoDashboard = ({ usuario }) => {
         .hover-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+        .custom-progress {
+          background-color: #e9ecef;
+        }
+        .custom-progress .progress-bar {
+          background-color: #6f42c1 !important;
         }
       `}</style>
     </div>

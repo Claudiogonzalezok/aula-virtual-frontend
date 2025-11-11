@@ -105,7 +105,7 @@ const DocenteDashboard = ({ usuario }) => {
                   <FaChalkboardTeacher size={40} className="text-success mb-3" />
                   <Card.Title>Mis Cursos</Card.Title>
                   <Card.Text className="text-muted">
-                    Gestiona tus clases, materiales y alumnos inscritos.
+                    Gestiona tus cursos, alumnos y estadísticas.
                   </Card.Text>
                   <Link to="/dashboard/cursos" className="btn btn-success w-100">
                     Ver Cursos
@@ -118,12 +118,12 @@ const DocenteDashboard = ({ usuario }) => {
               <Card className="shadow border-0 h-100 hover-card">
                 <Card.Body className="text-center">
                   <FaPlusCircle size={40} className="text-primary mb-3" />
-                  <Card.Title>Crear Curso</Card.Title>
+                  <Card.Title>Mis Clases</Card.Title>
                   <Card.Text className="text-muted">
-                    Crea nuevos cursos y asigna fechas o materiales.
+                    Ve todas las clases programadas con calendario y tabla.
                   </Card.Text>
-                  <Link to="/dashboard/cursos/nuevo" className="btn btn-primary w-100">
-                    Crear Curso
+                  <Link to="/dashboard/clases" className="btn btn-primary w-100">
+                    Ver Todas las Clases
                   </Link>
                 </Card.Body>
               </Card>

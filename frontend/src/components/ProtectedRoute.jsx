@@ -4,8 +4,8 @@ import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { token } = useContext(AuthContext);
-  return token ? children : <Navigate to="/login" />;
+  const { accessToken } = useContext(AuthContext);  // ✅ Cambiar "token" por "accessToken"
+  return accessToken ? children : <Navigate to="/login" />;
 };
 
 export default ProtectedRoute;

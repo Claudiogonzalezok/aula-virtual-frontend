@@ -10,6 +10,10 @@ import DashboardLayout from "./components/DashboardLayout";
 // Páginas principales
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
+import ResendVerification from "./pages/ResendVerification";
 import DashboardInicio from "./pages/DashboardInicio";
 
 // Gestión de Usuarios
@@ -25,9 +29,13 @@ import CourseDetail from "./pages/Cursos/CourseDetail";
 // Gestión de Clases
 import MisClases from "./pages/Clases/MisClases";
 
+// Gestión de Exámenes
 import ListaExamenes from "./pages/Examenes/ListaExamenes";
 import FormularioExamen from "./pages/Examenes/FormularioExamen";
 import RealizarExamen from "./pages/Examenes/RealizarExamen";
+import EstadisticasExamen from "./pages/Examenes/EstadisticasExamen";
+import CalificarExamen from "./pages/Examenes/CalificarExamen";
+import VerIntento from "./pages/Examenes/VerIntento";
 
 function App() {
   return (
@@ -40,6 +48,11 @@ function App() {
           {/* --- RUTAS PÚBLICAS --- */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          {/* 🆕 NUEVAS RUTAS DE VERIFICACIÓN */}
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/resend-verification" element={<ResendVerification />} />
 
           {/* --- RUTAS PROTEGIDAS (Dashboard) --- */}
           <Route
@@ -124,6 +137,7 @@ function App() {
             />
 
             {/* ========== GESTIÓN DE EXÁMENES ========== */}
+            {/* Lista de exámenes - Todos los roles */}
             <Route
               path="examenes"
               element={
@@ -132,6 +146,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Crear examen - Solo docentes/admin */}
             <Route
               path="examenes/crear"
               element={
@@ -140,6 +156,8 @@ function App() {
                 </DocenteRoute>
               }
             />
+
+            {/* Editar examen - Solo docentes/admin */}
             <Route
               path="examenes/:id/editar"
               element={
@@ -148,6 +166,8 @@ function App() {
                 </DocenteRoute>
               }
             />
+
+            {/* Realizar examen - Alumnos */}
             <Route
               path="examenes/:id/realizar"
               element={
@@ -157,8 +177,38 @@ function App() {
               }
             />
 
+            {/* Estadísticas - Solo docentes/admin */}
+            <Route
+              path="examenes/:id/estadisticas"
+              element={
+                <DocenteRoute>
+                  <EstadisticasExamen />
+                </DocenteRoute>
+              }
+            />
+
+            {/* Calificar intento - Solo docentes/admin */}
+            <Route
+              path="examenes/:id/intento/:intentoId/calificar"
+              element={
+                <DocenteRoute>
+                  <CalificarExamen />
+                </DocenteRoute>
+              }
+            />
+
+            {/* Ver intento - Todos (alumno ve solo los suyos) */}
+            <Route
+              path="examenes/:id/intento/:intentoId/ver"
+              element={
+                <ProtectedRoute>
+                  <VerIntento />
+                </ProtectedRoute>
+              }
+            />
+
             {/* ========== OTRAS RUTAS FUTURAS ========== */}
-            {/* Aquí puedes agregar: Inscripciones, Exámenes, Tareas, etc. */}
+            {/* Aquí puedes agregar: Tareas, Notas, Foros, etc. */}
           </Route>
 
           {/* --- RUTA 404 - Página no encontrada --- */}

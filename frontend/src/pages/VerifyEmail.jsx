@@ -10,19 +10,18 @@ const VerifyEmail = () => {
   const [error, setError] = useState("");
   const { token } = useParams();
   const navigate = useNavigate();
-  const haVerificado = useRef(false); // 🆕 Bandera para evitar doble ejecución
+  const haVerificado = useRef(false);
 
   useEffect(() => {
     const verificarEmail = async () => {
-      // 🆕 Si ya se verificó, no hacer nada
       if (haVerificado.current) {
         console.log("⚠️ Ya se intentó verificar, saltando...");
         return;
       }
       
-      haVerificado.current = true; // 🆕 Marcar como verificado
+      haVerificado.current = true;
+      
       try {
-        // Decodificar el token por si tiene caracteres especiales
         const decodedToken = decodeURIComponent(token);
         
         const { data } = await API.get(`/usuarios/verify-email/${decodedToken}`);
@@ -31,12 +30,16 @@ const VerifyEmail = () => {
         
         // Redirigir al login después de 3 segundos
         setTimeout(() => {
-          navigate("/login");
+          navigate("/login", { 
+            state: { 
+              mensaje: "Email verificado exitosamente. Podés iniciar sesión con las credenciales que te enviamos.", 
+              tipo: "success" 
+            }
+          });
         }, 3000);
       } catch (err) {
         setSuccess(false);
         
-        // Si el error es 400, puede ser que ya esté verificado o token inválido
         if (err.response?.status === 400) {
           setError(err.response?.data?.msg || "El enlace de verificación es inválido o ha expirado.");
         } else {
@@ -71,12 +74,16 @@ const VerifyEmail = () => {
                   </div>
                   <Alert variant="success">
                     <h4 className="mb-3">¡Email verificado exitosamente!</h4>
+                    <p className="mb-2">
+                      Tu cuenta ha sido activada correctamente. 
+                    </p>
                     <p className="mb-0">
-                      Tu cuenta ha sido activada. Serás redirigido al inicio de sesión en unos segundos...
+                      <strong>Ya podés iniciar sesión con las credenciales que te enviamos por email.</strong>
                     </p>
                   </Alert>
+                  <p className="text-muted small">Serás redirigido al login en unos segundos...</p>
                   <Link to="/login" className="btn btn-primary mt-3">
-                    Ir al Login
+                    Ir al Login ahora
                   </Link>
                 </div>
               )}

@@ -18,6 +18,7 @@ const TareasAlumno = () => {
     try {
       setLoading(true);
       const data = await listarTareas();
+
       setTareas(data.tareas || []);
     } catch (err) {
       setError(err.response?.data?.msg || "Error al cargar tareas");
@@ -80,7 +81,7 @@ const TareasAlumno = () => {
             </div>
             
             <p className="text-muted small mb-2">
-              📚 {tarea.curso?.nombre || "Sin curso"}
+            📚 {tarea.curso?.titulo || tarea.curso?.nombre || "Sin curso"}
             </p>
             
             <p className="text-truncate mb-2" style={{ maxHeight: "40px" }}>
@@ -106,8 +107,13 @@ const TareasAlumno = () => {
             </div>
 
             <Link to={`/dashboard/tareas/${tarea._id}`} className="btn btn-sm btn-primary w-100">
-              {estado.texto === "Sin entregar" ? "📤 Entregar tarea" : "👁️ Ver detalles"}
+            {!tarea.miEntrega || 
+            tarea.miEntrega.estado === "pendiente" || 
+            (!tarea.miEntrega.archivosEntregados?.length && !tarea.miEntrega.comentarioAlumno)
+                ? "📤 Entregar tarea" 
+                : "👁️ Ver detalles"}
             </Link>
+            
           </Card.Body>
         </Card>
       </Col>

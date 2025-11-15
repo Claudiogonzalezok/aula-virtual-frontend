@@ -14,6 +14,7 @@ import {
   BsFileEarmarkText,
   BsCalendar,
   BsFileEarmark,
+  BsClipboard2Check, // 🆕 AGREGAR ESTE IMPORT
 } from "react-icons/bs";
 
 const DashboardLayout = () => {
@@ -30,6 +31,7 @@ const DashboardLayout = () => {
           { to: "/dashboard", icon: <BsHouseDoor />, label: "Inicio" },
           { to: "/dashboard/usuarios", icon: <BsPeople />, label: "Usuarios" },
           { to: "/dashboard/cursos", icon: <BsBook />, label: "Cursos" },
+          { to: "/dashboard/tareas", icon: <BsClipboard2Check />, label: "Tareas" }, // 🆕 AGREGAR
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
           { to: "/dashboard/reportes", icon: <BsFileEarmarkText />, label: "Reportes" },
           { to: "/dashboard/configuracion", icon: <BsGear />, label: "Configuración" },
@@ -39,6 +41,7 @@ const DashboardLayout = () => {
           { to: "/dashboard", icon: <BsHouseDoor />, label: "Inicio" },
           { to: "/dashboard/cursos", icon: <BsBook />, label: "Mis Cursos" },
           { to: "/dashboard/clases", icon: <BsCalendar />, label: "Mis Clases" },
+          { to: "/dashboard/tareas", icon: <BsClipboard2Check />, label: "Tareas" }, // 🆕 AGREGAR
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
           { to: "/dashboard/mensajes", icon: <BsChatDots />, label: "Mensajes" },
         ];
@@ -47,7 +50,7 @@ const DashboardLayout = () => {
           { to: "/dashboard", icon: <BsHouseDoor />, label: "Inicio" },
           { to: "/dashboard/cursos", icon: <BsBook />, label: "Mis Cursos" },
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
-          { to: "/dashboard/tareas", icon: <BsFileEarmark />, label: "Tareas" },
+          { to: "/dashboard/mis-tareas", icon: <BsClipboard2Check />, label: "Mis Tareas" }, // 🔥 CAMBIAR RUTA
           { to: "/dashboard/notas", icon: <BsCardChecklist />, label: "Mis Notas" },
         ];
       default:

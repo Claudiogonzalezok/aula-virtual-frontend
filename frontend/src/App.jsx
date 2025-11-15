@@ -37,6 +37,13 @@ import EstadisticasExamen from "./pages/Examenes/EstadisticasExamen";
 import CalificarExamen from "./pages/Examenes/CalificarExamen";
 import VerIntento from "./pages/Examenes/VerIntento";
 
+// 🆕 Gestión de Tareas
+import TareasDocente from "./pages/Tareas/TareasDocente";
+import TareasAlumno from "./pages/Tareas/TareasAlumno";
+import CrearEditarTarea from "./pages/Tareas/CrearTarea";
+import DetalleTarea from "./pages/Tareas/DetalleTarea";
+import CalificarEntregas from "./pages/Tareas/CalificarEntrega";
+
 function App() {
   return (
     <AuthProvider>
@@ -207,8 +214,70 @@ function App() {
               }
             />
 
+            {/* ========== 🆕 GESTIÓN DE TAREAS ========== */}
+            
+            {/* Lista de tareas - Docentes/Admin */}
+            <Route
+              path="tareas"
+              element={
+                <DocenteRoute>
+                  <TareasDocente />
+                </DocenteRoute>
+              }
+            />
+
+            {/* Crear tarea - Solo docentes/admin */}
+            <Route
+              path="tareas/crear"
+              element={
+                <DocenteRoute>
+                  <CrearEditarTarea />
+                </DocenteRoute>
+              }
+            />
+
+            {/* Editar tarea - Solo docentes/admin */}
+            <Route
+              path="tareas/editar/:id"
+              element={
+                <DocenteRoute>
+                  <CrearEditarTarea />
+                </DocenteRoute>
+              }
+            />
+
+            {/* Calificar entregas - Solo docentes/admin */}
+            <Route
+              path="tareas/:id/calificar"
+              element={
+                <DocenteRoute>
+                  <CalificarEntregas />
+                </DocenteRoute>
+              }
+            />
+
+            {/* Mis tareas (vista alumno) */}
+            <Route
+              path="mis-tareas"
+              element={
+                <ProtectedRoute>
+                  <TareasAlumno />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Detalle de tarea - Todos los roles */}
+            <Route
+              path="tareas/:id"
+              element={
+                <ProtectedRoute>
+                  <DetalleTarea />
+                </ProtectedRoute>
+              }
+            />
+
             {/* ========== OTRAS RUTAS FUTURAS ========== */}
-            {/* Aquí puedes agregar: Tareas, Notas, Foros, etc. */}
+            {/* Aquí puedes agregar: Notas, Foros, etc. */}
           </Route>
 
           {/* --- RUTA 404 - Página no encontrada --- */}

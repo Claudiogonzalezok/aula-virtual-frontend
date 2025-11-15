@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: `${import.meta.env.VITE_API_URL}/api`, // 🔥 Usar variable de entorno
 });
 
 // Variable para evitar múltiples intentos de refresh
@@ -64,9 +64,9 @@ API.interceptors.response.use(
       }
 
       try {
-        // Intentar obtener nuevo access token
+        // Intentar obtener nuevo access token - 🔥 Usar variable de entorno
         const { data } = await axios.post(
-          "http://localhost:5000/api/usuarios/refresh-token",
+          `${import.meta.env.VITE_API_URL}/api/usuarios/refresh-token`,
           { refreshToken }
         );
 

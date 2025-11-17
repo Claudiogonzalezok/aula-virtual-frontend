@@ -1,158 +1,152 @@
-// frontend/src/pages/tareas/CalificarEntrega.jsx
+// frontend/src/pages/Tareas/CalificarEntrega.jsx
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Table, Button, Badge, Spinner, Alert, Modal, Form, ListGroup, Tabs, Tab } from "react-bootstrap";
-import { useParams, Link } from "react-router-dom";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Table,
+  Badge,
+  Button,
+  Form,
+  Modal,
+  Alert,
+  Spinner,
+  ListGroup,
+  Tabs,
+  Tab
+} from "react-bootstrap";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { obtenerTarea } from "../../services/tareaService";
-import { obtenerEntregasPorTarea, calificarEntrega, devolverEntrega, exportarCalificaciones } from "../../services/entregaService";
+import {
+  obtenerEntregasPorTarea,
+  calificarEntrega,
+  devolverEntrega
+} from "../../services/entregaService";
 
-const CalificarEntregas = () => {
-  const { id } = useParams(); // ID de la tarea
-  
+const CalificarEntrega = () => {
+  const { id: tareaId } = useParams();
+  const navigate = useNavigate();
+
   const [tarea, setTarea] = useState(null);
   const [entregas, setEntregas] = useState([]);
   const [alumnosSinEntregar, setAlumnosSinEntregar] = useState([]);
   const [estadisticas, setEstadisticas] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mensaje, setMensaje] = useState(null);
 
   // Modal de calificación
   const [showModal, setShowModal] = useState(false);
   const [entregaSeleccionada, setEntregaSeleccionada] = useState(null);
   const [calificacion, setCalificacion] = useState("");
-  const [comentarioDocente, setComentarioDocente] = useState("");
-  const [archivosDevolucion, setArchivosDevolucion] = useState([]);
-  const [calificandoRubrica, setCalificandoRubrica] = useState([]);
-  const [guardando, setGuardando] = useState(false);
+  const [comentario, setComentario] = useState("");
+  const [procesando, setProcesando] = useState(false);
 
-  // Filtros
-  const [filtroEstado, setFiltroEstado] = useState("todas");
+  // Tabs
+  const [tabActiva, setTabActiva] = useState("entregadas");
 
   useEffect(() => {
     cargarDatos();
-  }, [id]);
+  }, [tareaId]);
 
   const cargarDatos = async () => {
     try {
       setLoading(true);
       const [tareaData, entregasData] = await Promise.all([
-        obtenerTarea(id),
-        obtenerEntregasPorTarea(id)
+        obtenerTarea(tareaId),
+        obtenerEntregasPorTarea(tareaId)
       ]);
+
+      console.log("📊 Datos de tarea:", tareaData);
+      console.log("📊 Datos de entregas:", entregasData);
 
       setTarea(tareaData);
       setEntregas(entregasData.entregas || []);
       setAlumnosSinEntregar(entregasData.alumnosSinEntregar || []);
-      setEstadisticas(entregasData.estadisticas);
+      setEstadisticas(entregasData.estadisticas || {});
     } catch (err) {
-      setError(err.response?.data?.msg || "Error al cargar entregas");
+      console.error("❌ Error al cargar datos:", err);
+      setError(err.response?.data?.msg || "Error al cargar datos");
     } finally {
       setLoading(false);
     }
   };
 
-  const abrirModalCalificar = (entrega) => {
+  const abrirModalCalificacion = (entrega) => {
     setEntregaSeleccionada(entrega);
     setCalificacion(entrega.calificacion || "");
-    setComentarioDocente(entrega.comentarioDocente || "");
-    setArchivosDevolucion([]);
-    
-    // Inicializar calificación por rúbrica si existe
-    if (tarea.rubrica && tarea.rubrica.length > 0) {
-      const rubricaInicial = tarea.rubrica.map((criterio, index) => ({
-        criterio: criterio.criterio,
-        puntajeMaximo: criterio.puntajeMaximo,
-        puntajeObtenido: entrega.calificacionRubrica?.[index]?.puntajeObtenido || 0
-      }));
-      setCalificandoRubrica(rubricaInicial);
-    }
-    
+    setComentario(entrega.comentarioDocente || "");
     setShowModal(true);
   };
 
-  const handleGuardarCalificacion = async () => {
-    try {
-      setGuardando(true);
+  const cerrarModal = () => {
+    setShowModal(false);
+    setEntregaSeleccionada(null);
+    setCalificacion("");
+    setComentario("");
+  };
 
+  const handleCalificar = async (e) => {
+    e.preventDefault();
+    setProcesando(true);
+
+    try {
       const formData = new FormData();
       formData.append("calificacion", calificacion);
-      formData.append("comentarioDocente", comentarioDocente);
-
-      if (calificandoRubrica.length > 0) {
-        formData.append("calificacionRubrica", JSON.stringify(calificandoRubrica));
-      }
-
-      archivosDevolucion.forEach(archivo => {
-        formData.append("archivosDevolucion", archivo);
-      });
+      formData.append("comentarioDocente", comentario);
 
       await calificarEntrega(entregaSeleccionada._id, formData);
-      
-      setShowModal(false);
-      cargarDatos(); // Recargar para ver cambios
+
+      setMensaje({
+        tipo: "success",
+        texto: "Entrega calificada correctamente"
+      });
+
+      cerrarModal();
+      cargarDatos();
     } catch (err) {
-      alert(err.response?.data?.msg || "Error al calificar entrega");
+      console.error("❌ Error al calificar:", err);
+      setMensaje({
+        tipo: "danger",
+        texto: err.response?.data?.msg || "Error al calificar"
+      });
     } finally {
-      setGuardando(false);
+      setProcesando(false);
     }
   };
 
   const handleDevolver = async (entregaId) => {
-    const comentario = prompt("Escribe un comentario explicando por qué se devuelve la entrega:");
-    if (!comentario) return;
+    const motivo = prompt("Escribe el motivo por el cual devuelves esta entrega:");
+    if (!motivo) return;
 
     try {
-      await devolverEntrega(entregaId, comentario);
+      await devolverEntrega(entregaId, motivo);
+      setMensaje({
+        tipo: "success",
+        texto: "Entrega devuelta al alumno"
+      });
       cargarDatos();
     } catch (err) {
-      alert(err.response?.data?.msg || "Error al devolver entrega");
+      setMensaje({
+        tipo: "danger",
+        texto: err.response?.data?.msg || "Error al devolver entrega"
+      });
     }
-  };
-
-  const handleExportar = async () => {
-    try {
-      const data = await exportarCalificaciones(id);
-      
-      // Convertir a CSV
-      const csv = data.datos.map(row => 
-        Array.isArray(row) ? row.join(",") : Object.values(row).join(",")
-      ).join("\n");
-
-      // Descargar
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = data.nombreArchivo;
-      a.click();
-    } catch (err) {
-      alert(err.response?.data?.msg || "Error al exportar");
-    }
-  };
-
-  const actualizarRubrica = (index, puntaje) => {
-    const nuevaRubrica = [...calificandoRubrica];
-    nuevaRubrica[index].puntajeObtenido = Number(puntaje);
-    setCalificandoRubrica(nuevaRubrica);
-
-    // Calcular calificación total automáticamente
-    const total = nuevaRubrica.reduce((sum, item) => sum + item.puntajeObtenido, 0);
-    setCalificacion(total);
   };
 
   const obtenerBadgeEstado = (estado) => {
-    const badges = {
-      pendiente: { bg: "secondary", text: "⏳ Pendiente" },
-      entregada: { bg: "info", text: "📤 Entregada" },
-      calificada: { bg: "success", text: "✅ Calificada" },
-      devuelta: { bg: "danger", text: "🔄 Devuelta" }
-    };
-    return badges[estado] || badges.pendiente;
+    switch (estado) {
+      case "entregada":
+        return <Badge bg="info">📤 Entregada</Badge>;
+      case "calificada":
+        return <Badge bg="success">✅ Calificada</Badge>;
+      case "devuelta":
+        return <Badge bg="warning">🔄 Devuelta</Badge>;
+      default:
+        return <Badge bg="secondary">⏳ Pendiente</Badge>;
+    }
   };
-
-  const entregasFiltradas = entregas.filter(e => {
-    if (filtroEstado === "todas") return true;
-    return e.estado === filtroEstado;
-  });
 
   if (loading) {
     return (
@@ -185,22 +179,28 @@ const CalificarEntregas = () => {
           <div className="d-flex justify-content-between align-items-start">
             <div>
               <h2>📝 Calificar Entregas</h2>
-              <p className="text-muted mb-2">{tarea.titulo}</p>
-              <p className="text-muted small">
-                📚 {tarea.curso?.nombre} • 📊 Puntaje máximo: {tarea.puntajeMaximo} pts
+              <h4 className="text-muted">{tarea?.titulo}</h4>
+              <p className="text-muted mb-0">
+                📚 {tarea?.curso?.titulo || tarea?.curso?.nombre}
               </p>
             </div>
-            <div className="d-flex gap-2">
-              <Button variant="outline-success" onClick={handleExportar}>
-                📊 Exportar Calificaciones
-              </Button>
-              <Link to={`/dashboard/tareas/${id}`}>
-                <Button variant="outline-secondary">← Volver</Button>
-              </Link>
-            </div>
+            <Link to={`/dashboard/tareas/${tareaId}`}>
+              <Button variant="secondary">← Volver</Button>
+            </Link>
           </div>
         </Col>
       </Row>
+
+      {/* Mensajes */}
+      {mensaje && (
+        <Alert
+          variant={mensaje.tipo}
+          dismissible
+          onClose={() => setMensaje(null)}
+        >
+          {mensaje.texto}
+        </Alert>
+      )}
 
       {/* Estadísticas */}
       {estadisticas && (
@@ -208,130 +208,107 @@ const CalificarEntregas = () => {
           <Col md={3}>
             <Card className="text-center">
               <Card.Body>
-                <h3>{estadisticas.total}</h3>
-                <p className="text-muted mb-0">Total Alumnos</p>
+                <h3>{estadisticas.total || 0}</h3>
+                <p className="text-muted mb-0">Total Inscritos</p>
               </Card.Body>
             </Card>
           </Col>
           <Col md={3}>
-            <Card className="text-center">
+            <Card className="text-center border-info">
               <Card.Body>
-                <h3 className="text-success">{estadisticas.entregadas}</h3>
+                <h3 className="text-info">{estadisticas.entregadas || 0}</h3>
                 <p className="text-muted mb-0">Entregadas</p>
               </Card.Body>
             </Card>
           </Col>
           <Col md={3}>
-            <Card className="text-center">
+            <Card className="text-center border-success">
               <Card.Body>
-                <h3 className="text-warning">{estadisticas.pendientes}</h3>
-                <p className="text-muted mb-0">Pendientes</p>
+                <h3 className="text-success">{estadisticas.calificadas || 0}</h3>
+                <p className="text-muted mb-0">Calificadas</p>
               </Card.Body>
             </Card>
           </Col>
           <Col md={3}>
-            <Card className="text-center">
+            <Card className="text-center border-warning">
               <Card.Body>
-                <h3 className="text-info">{estadisticas.calificadas}</h3>
-                <p className="text-muted mb-0">Calificadas</p>
+                <h3 className="text-warning">{estadisticas.sinEntregar || 0}</h3>
+                <p className="text-muted mb-0">Sin Entregar</p>
               </Card.Body>
             </Card>
           </Col>
         </Row>
       )}
 
-      {/* Filtros */}
-      <Card className="mb-4">
-        <Card.Body>
-          <Row>
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label>Filtrar por estado</Form.Label>
-                <Form.Select
-                  value={filtroEstado}
-                  onChange={(e) => setFiltroEstado(e.target.value)}
-                >
-                  <option value="todas">Todas</option>
-                  <option value="pendiente">Pendientes</option>
-                  <option value="entregada">Entregadas</option>
-                  <option value="calificada">Calificadas</option>
-                  <option value="devuelta">Devueltas</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
       {/* Tabs */}
-      <Tabs defaultActiveKey="entregas" className="mb-4">
-        <Tab eventKey="entregas" title={`📤 Entregas (${entregas.length})`}>
+      <Tabs
+        activeKey={tabActiva}
+        onSelect={(k) => setTabActiva(k)}
+        className="mb-4"
+      >
+        {/* Tab: Entregadas */}
+        <Tab
+          eventKey="entregadas"
+          title={`📤 Entregadas (${entregas.filter(e => e.estado === "entregada").length})`}
+        >
           <Card>
             <Card.Body>
-              {entregasFiltradas.length === 0 ? (
-                <Alert variant="info">No hay entregas con el filtro seleccionado.</Alert>
+              {entregas.filter(e => e.estado === "entregada").length === 0 ? (
+                <Alert variant="info">
+                  No hay entregas pendientes de calificación
+                </Alert>
               ) : (
                 <Table responsive hover>
                   <thead>
                     <tr>
                       <th>Alumno</th>
-                      <th>Estado</th>
                       <th>Fecha Entrega</th>
-                      <th>Calificación</th>
+                      <th>Estado</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {entregasFiltradas.map((entrega) => {
-                      const badge = obtenerBadgeEstado(entrega.estado);
-                      return (
+                    {entregas
+                      .filter(e => e.estado === "entregada")
+                      .map((entrega) => (
                         <tr key={entrega._id}>
                           <td>
                             <strong>{entrega.alumno?.nombre}</strong>
                             <br />
-                            <small className="text-muted">{entrega.alumno?.email}</small>
+                            <small className="text-muted">
+                              {entrega.alumno?.email}
+                            </small>
                           </td>
                           <td>
-                            <Badge bg={badge.bg}>{badge.text}</Badge>
+                            {new Date(entrega.fechaEntrega).toLocaleString()}
                             {entrega.entregadaTarde && (
-                              <><br /><Badge bg="warning" className="mt-1">⚠️ Tarde</Badge></>
+                              <>
+                                <br />
+                                <Badge bg="warning">⚠️ Tardía</Badge>
+                              </>
                             )}
                           </td>
-                          <td>
-                            {entrega.fechaEntrega 
-                              ? new Date(entrega.fechaEntrega).toLocaleString()
-                              : "-"
-                            }
-                          </td>
-                          <td>
-                            {entrega.calificacion !== null && entrega.calificacion !== undefined
-                              ? <strong>{entrega.calificacion} / {tarea.puntajeMaximo}</strong>
-                              : "-"
-                            }
-                          </td>
+                          <td>{obtenerBadgeEstado(entrega.estado)}</td>
                           <td>
                             <div className="d-flex gap-2">
                               <Button
+                                variant="success"
                                 size="sm"
-                                variant="outline-primary"
-                                onClick={() => abrirModalCalificar(entrega)}
+                                onClick={() => abrirModalCalificacion(entrega)}
                               >
-                                {entrega.estado === "calificada" ? "✏️ Ver/Editar" : "📝 Calificar"}
+                                ✅ Calificar
                               </Button>
-                              {entrega.estado !== "devuelta" && entrega.estado !== "pendiente" && (
-                                <Button
-                                  size="sm"
-                                  variant="outline-danger"
-                                  onClick={() => handleDevolver(entrega._id)}
-                                >
-                                  🔄 Devolver
-                                </Button>
-                              )}
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => handleDevolver(entrega._id)}
+                              >
+                                🔄 Devolver
+                              </Button>
                             </div>
                           </td>
                         </tr>
-                      );
-                    })}
+                      ))}
                   </tbody>
                 </Table>
               )}
@@ -339,27 +316,199 @@ const CalificarEntregas = () => {
           </Card>
         </Tab>
 
-        <Tab eventKey="sin-entregar" title={`⚠️ Sin Entregar (${alumnosSinEntregar.length})`}>
+        {/* Tab: Calificadas */}
+        <Tab
+          eventKey="calificadas"
+          title={`✅ Calificadas (${entregas.filter(e => e.estado === "calificada").length})`}
+        >
+          <Card>
+            <Card.Body>
+              {entregas.filter(e => e.estado === "calificada").length === 0 ? (
+                <Alert variant="info">
+                  No hay entregas calificadas todavía
+                </Alert>
+              ) : (
+                <Table responsive hover>
+                  <thead>
+                    <tr>
+                      <th>Alumno</th>
+                      <th>Fecha Entrega</th>
+                      <th>Calificación</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {entregas
+                      .filter(e => e.estado === "calificada")
+                      .map((entrega) => (
+                        <tr key={entrega._id}>
+                          <td>
+                            <strong>{entrega.alumno?.nombre}</strong>
+                            <br />
+                            <small className="text-muted">
+                              {entrega.alumno?.email}
+                            </small>
+                          </td>
+                          <td>
+                            {new Date(entrega.fechaEntrega).toLocaleString()}
+                            {entrega.entregadaTarde && (
+                              <>
+                                <br />
+                                <Badge bg="warning">⚠️ Tardía</Badge>
+                              </>
+                            )}
+                          </td>
+                          <td>
+                            <Badge bg="success" style={{ fontSize: "1.1em" }}>
+                              {entrega.calificacion} / {tarea?.puntajeMaximo}
+                            </Badge>
+                          </td>
+                          <td>
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => abrirModalCalificacion(entrega)}
+                            >
+                              👁️ Ver / Editar
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </Table>
+              )}
+            </Card.Body>
+          </Card>
+        </Tab>
+
+        {/* Tab: Sin Entregar */}
+        <Tab
+          eventKey="sinEntregar"
+          title={`⚠️ Sin Entregar (${alumnosSinEntregar.length})`}
+        >
           <Card>
             <Card.Body>
               {alumnosSinEntregar.length === 0 ? (
-                <Alert variant="success">¡Todos los alumnos entregaron la tarea!</Alert>
+                <Alert variant="success">
+                  ¡Todos los alumnos han entregado! 🎉
+                </Alert>
               ) : (
-                <ListGroup>
-                  {alumnosSinEntregar.map((item, index) => (
-                    <ListGroup.Item key={index}>
-                      <strong>{item.alumno?.nombre}</strong> • {item.alumno?.email}
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
+                <Table responsive hover>
+                  <thead>
+                    <tr>
+                      <th>Alumno</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {alumnosSinEntregar.map((item, index) => (
+                      <tr key={index}>
+                        <td>
+                          <strong>{item.alumno?.nombre}</strong>
+                          <br />
+                          <small className="text-muted">
+                            {item.alumno?.email}
+                          </small>
+                        </td>
+                        <td>
+                          <Badge bg="warning">⚠️ Sin entregar</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
               )}
+            </Card.Body>
+          </Card>
+        </Tab>
+
+        {/* Tab: Todas */}
+        <Tab eventKey="todas" title={`📚 Todas (${entregas.length})`}>
+          <Card>
+            <Card.Body>
+              <Table responsive hover>
+                <thead>
+                  <tr>
+                    <th>Alumno</th>
+                    <th>Fecha Entrega</th>
+                    <th>Estado</th>
+                    <th>Calificación</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entregas.map((entrega) => (
+                    <tr key={entrega._id}>
+                      <td>
+                        <strong>{entrega.alumno?.nombre}</strong>
+                        <br />
+                        <small className="text-muted">
+                          {entrega.alumno?.email}
+                        </small>
+                      </td>
+                      <td>
+                        {entrega.fechaEntrega
+                          ? new Date(entrega.fechaEntrega).toLocaleString()
+                          : "-"}
+                        {entrega.entregadaTarde && (
+                          <>
+                            <br />
+                            <Badge bg="warning">⚠️ Tardía</Badge>
+                          </>
+                        )}
+                      </td>
+                      <td>{obtenerBadgeEstado(entrega.estado)}</td>
+                      <td>
+                        {entrega.calificacion !== null &&
+                        entrega.calificacion !== undefined ? (
+                          <Badge bg="success">
+                            {entrega.calificacion} / {tarea?.puntajeMaximo}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted">-</span>
+                        )}
+                      </td>
+                      <td>
+                        {entrega.estado === "entregada" ? (
+                          <div className="d-flex gap-2">
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => abrirModalCalificacion(entrega)}
+                            >
+                              ✅ Calificar
+                            </Button>
+                            <Button
+                              variant="outline-warning"
+                              size="sm"
+                              onClick={() => handleDevolver(entrega._id)}
+                            >
+                              🔄 Devolver
+                            </Button>
+                          </div>
+                        ) : entrega.estado === "calificada" ? (
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => abrirModalCalificacion(entrega)}
+                          >
+                            👁️ Ver / Editar
+                          </Button>
+                        ) : (
+                          <span className="text-muted">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
             </Card.Body>
           </Card>
         </Tab>
       </Tabs>
 
       {/* Modal de Calificación */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+      <Modal show={showModal} onHide={cerrarModal} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
             📝 Calificar Entrega - {entregaSeleccionada?.alumno?.nombre}
@@ -374,20 +523,24 @@ const CalificarEntregas = () => {
                   <Row>
                     <Col md={6}>
                       <p className="mb-1">
-                        <strong>Fecha de entrega:</strong><br />
-                        {new Date(entregaSeleccionada.fechaEntrega).toLocaleString()}
+                        <strong>Fecha de entrega:</strong>{" "}
+                        {new Date(
+                          entregaSeleccionada.fechaEntrega
+                        ).toLocaleString()}
+                      </p>
+                      <p className="mb-1">
+                        <strong>Estado:</strong>{" "}
+                        {obtenerBadgeEstado(entregaSeleccionada.estado)}
                       </p>
                     </Col>
                     <Col md={6}>
-                      <p className="mb-1">
-                        <strong>Estado:</strong><br />
-                        <Badge bg={obtenerBadgeEstado(entregaSeleccionada.estado).bg}>
-                          {obtenerBadgeEstado(entregaSeleccionada.estado).text}
-                        </Badge>
-                        {entregaSeleccionada.entregadaTarde && (
-                          <Badge bg="warning" className="ms-2">⚠️ Tarde</Badge>
-                        )}
-                      </p>
+                      {entregaSeleccionada.entregadaTarde && (
+                        <Alert variant="warning" className="mb-0">
+                          <strong>⚠️ Entrega tardía</strong>
+                          <br />
+                          Se aplicará {tarea?.penalizacionTarde}% de penalización
+                        </Alert>
+                      )}
                     </Col>
                   </Row>
                 </Card.Body>
@@ -396,9 +549,9 @@ const CalificarEntregas = () => {
               {/* Comentario del alumno */}
               {entregaSeleccionada.comentarioAlumno && (
                 <Card className="mb-3">
-                  <Card.Header>💬 Comentario del alumno</Card.Header>
+                  <Card.Header>💬 Comentario del Alumno</Card.Header>
                   <Card.Body>
-                    <p style={{ whiteSpace: "pre-wrap" }}>
+                    <p className="mb-0">
                       {entregaSeleccionada.comentarioAlumno}
                     </p>
                   </Card.Body>
@@ -406,124 +559,88 @@ const CalificarEntregas = () => {
               )}
 
               {/* Archivos entregados */}
-              {entregaSeleccionada.archivosEntregados?.length > 0 && (
-                <Card className="mb-3">
-                  <Card.Header>📎 Archivos entregados</Card.Header>
-                  <ListGroup variant="flush">
-                    {entregaSeleccionada.archivosEntregados.map((archivo, index) => (
-                      <ListGroup.Item key={index}>
-                        <a 
-                          href={`${process.env.REACT_APP_API_URL}/${archivo.url}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                        >
-                          📄 {archivo.nombre}
-                        </a>
-                        <span className="text-muted small ms-2">
-                          ({(archivo.tamano / 1024).toFixed(1)} KB)
-                        </span>
-                      </ListGroup.Item>
-                    ))}
-                  </ListGroup>
-                </Card>
-              )}
-
-              <hr />
+              {entregaSeleccionada.archivosEntregados &&
+                entregaSeleccionada.archivosEntregados.length > 0 && (
+                  <Card className="mb-3">
+                    <Card.Header>📎 Archivos Entregados</Card.Header>
+                    <ListGroup variant="flush">
+                      {entregaSeleccionada.archivosEntregados.map(
+                        (archivo, index) => (
+                          <ListGroup.Item key={index}>
+                            <a
+                              href={`${import.meta.env.VITE_API_URL}/${archivo.url}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              📄 {archivo.nombre}
+                            </a>
+                            <span className="text-muted small ms-2">
+                              ({(archivo.tamano / 1024).toFixed(1)} KB)
+                            </span>
+                          </ListGroup.Item>
+                        )
+                      )}
+                    </ListGroup>
+                  </Card>
+                )}
 
               {/* Formulario de calificación */}
-              <h5 className="mb-3">✍️ Calificar</h5>
-
-              {/* Calificación por rúbrica */}
-              {tarea.rubrica && tarea.rubrica.length > 0 && (
-                <Card className="mb-3">
-                  <Card.Header>📐 Calificación por Rúbrica</Card.Header>
-                  <Card.Body>
-                    {calificandoRubrica.map((item, index) => (
-                      <Form.Group key={index} className="mb-3">
-                        <Form.Label>
-                          <strong>{item.criterio}</strong> (Max: {item.puntajeMaximo} pts)
-                        </Form.Label>
-                        <Form.Control
-                          type="number"
-                          min="0"
-                          max={item.puntajeMaximo}
-                          value={item.puntajeObtenido}
-                          onChange={(e) => actualizarRubrica(index, e.target.value)}
-                        />
-                      </Form.Group>
-                    ))}
-                    <Alert variant="info">
-                      <strong>Total automático:</strong> {calificacion} / {tarea.puntajeMaximo}
-                    </Alert>
-                  </Card.Body>
-                </Card>
-              )}
-
-              {/* Calificación manual */}
-              {(!tarea.rubrica || tarea.rubrica.length === 0) && (
+              <Form onSubmit={handleCalificar}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Calificación *</Form.Label>
+                  <Form.Label>
+                    <strong>Calificación (máx: {tarea?.puntajeMaximo})</strong>
+                  </Form.Label>
                   <Form.Control
                     type="number"
                     min="0"
-                    max={tarea.puntajeMaximo}
+                    max={tarea?.puntajeMaximo}
+                    step="0.1"
                     value={calificacion}
                     onChange={(e) => setCalificacion(e.target.value)}
                     required
+                    placeholder={`0 - ${tarea?.puntajeMaximo}`}
                   />
-                  <Form.Text className="text-muted">
-                    Máximo: {tarea.puntajeMaximo} puntos
-                    {entregaSeleccionada.entregadaTarde && tarea.penalizacionTarde > 0 && (
-                      <> • Se aplicará {tarea.penalizacionTarde}% de penalización</>
-                    )}
-                  </Form.Text>
                 </Form.Group>
-              )}
 
-              <Form.Group className="mb-3">
-                <Form.Label>Comentario / Feedback</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={4}
-                  value={comentarioDocente}
-                  onChange={(e) => setComentarioDocente(e.target.value)}
-                  placeholder="Escribe tu feedback para el alumno..."
-                />
-              </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    <strong>Comentario / Retroalimentación</strong>
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    value={comentario}
+                    onChange={(e) => setComentario(e.target.value)}
+                    placeholder="Escribe tu comentario para el alumno..."
+                  />
+                </Form.Group>
 
-              <Form.Group className="mb-3">
-                <Form.Label>Archivos de devolución (opcional)</Form.Label>
-                <Form.Control
-                  type="file"
-                  multiple
-                  onChange={(e) => setArchivosDevolucion(Array.from(e.target.files))}
-                />
-              </Form.Group>
+                <div className="d-flex gap-2 justify-content-end">
+                  <Button variant="secondary" onClick={cerrarModal}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="success"
+                    type="submit"
+                    disabled={procesando}
+                  >
+                    {procesando ? (
+                      <>
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        Guardando...
+                      </>
+                    ) : (
+                      "✅ Guardar Calificación"
+                    )}
+                  </Button>
+                </div>
+              </Form>
             </>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cancelar
-          </Button>
-          <Button 
-            variant="success" 
-            onClick={handleGuardarCalificacion}
-            disabled={guardando || !calificacion}
-          >
-            {guardando ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                Guardando...
-              </>
-            ) : (
-              "💾 Guardar Calificación"
-            )}
-          </Button>
-        </Modal.Footer>
       </Modal>
     </Container>
   );
 };
 
-export default CalificarEntregas;
+export default CalificarEntrega;

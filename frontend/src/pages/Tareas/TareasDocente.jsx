@@ -21,22 +21,44 @@ const TareasDocente = () => {
     cargarDatos();
   }, []);
 
-  const cargarDatos = async () => {
-    try {
-      setLoading(true);
-      const [tareasData, cursosData] = await Promise.all([
-        listarTareas(),
-        listarCursos()
-      ]);
-      
-      setTareas(tareasData.tareas || tareasData || []);
-      setCursos(cursosData.cursos || cursosData || []);
-    } catch (err) {
-      setError(err.response?.data?.msg || "Error al cargar tareas");
-    } finally {
-      setLoading(false);
-    }
-  };
+const cargarDatos = async () => {
+  try {
+    setLoading(true);
+    const [tareasData, cursosData] = await Promise.all([
+      listarTareas(),
+      listarCursos()
+    ]);
+    
+    // 🔥 AGREGAR ESTOS LOGS:
+    console.log("📊 Respuesta completa de tareas:", tareasData);
+    console.log("📊 Tipo de tareasData:", typeof tareasData);
+    console.log("📊 Es array tareasData?:", Array.isArray(tareasData));
+    console.log("📊 tareasData.tareas:", tareasData.tareas);
+    
+    // 🔥 CAMBIAR ESTA LÍNEA:
+    // ANTES:
+    // setTareas(tareasData.tareas || tareasData || []);
+    
+    // DESPUÉS:
+    const tareasArray = Array.isArray(tareasData) 
+      ? tareasData 
+      : (Array.isArray(tareasData.tareas) ? tareasData.tareas : []);
+    
+    console.log("📊 Tareas finales:", tareasArray);
+    setTareas(tareasArray);
+    
+    const cursosArray = Array.isArray(cursosData)
+      ? cursosData
+      : (Array.isArray(cursosData.cursos) ? cursosData.cursos : []);
+    
+    setCursos(cursosArray);
+  } catch (err) {
+    console.error("❌ Error completo:", err);
+    setError(err.response?.data?.msg || "Error al cargar tareas");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEliminar = async (id) => {
     if (window.confirm("¿Estás seguro de eliminar esta tarea?")) {

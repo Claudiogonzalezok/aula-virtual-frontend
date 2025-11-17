@@ -205,14 +205,7 @@ const CalificarEntrega = () => {
       {/* Estadísticas */}
       {estadisticas && (
         <Row className="mb-4">
-          <Col md={3}>
-            <Card className="text-center">
-              <Card.Body>
-                <h3>{estadisticas.total || 0}</h3>
-                <p className="text-muted mb-0">Total Inscritos</p>
-              </Card.Body>
-            </Card>
-          </Col>
+
           <Col md={3}>
             <Card className="text-center border-info">
               <Card.Body>
@@ -226,6 +219,14 @@ const CalificarEntrega = () => {
               <Card.Body>
                 <h3 className="text-success">{estadisticas.calificadas || 0}</h3>
                 <p className="text-muted mb-0">Calificadas</p>
+              </Card.Body>
+            </Card>
+          </Col>
+            <Col md={3}>
+            <Card className="text-center border-danger">
+              <Card.Body>
+                <h3 className="text-danger">{estadisticas.devueltas || 0}</h3>
+                <p className="text-muted mb-0">Devueltas</p>
               </Card.Body>
             </Card>
           </Col>
@@ -249,7 +250,7 @@ const CalificarEntrega = () => {
         {/* Tab: Entregadas */}
         <Tab
           eventKey="entregadas"
-          title={`📤 Entregadas (${entregas.filter(e => e.estado === "entregada").length})`}
+          title={`📤 Para Calificar (${entregas.filter(e => e.estado === "entregada").length})`}
         >
           <Card>
             <Card.Body>
@@ -381,7 +382,7 @@ const CalificarEntrega = () => {
           </Card>
         </Tab>
 
-        {/* Tab: Sin Entregar */}
+         {/* Tab: Sin Entregar */}
         <Tab
           eventKey="sinEntregar"
           title={`⚠️ Sin Entregar (${alumnosSinEntregar.length})`}

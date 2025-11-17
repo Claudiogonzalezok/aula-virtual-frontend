@@ -36,6 +36,7 @@ import RealizarExamen from "./pages/Examenes/RealizarExamen";
 import EstadisticasExamen from "./pages/Examenes/EstadisticasExamen";
 import CalificarExamen from "./pages/Examenes/CalificarExamen";
 import VerIntento from "./pages/Examenes/VerIntento";
+import DetalleExamen from "./pages/Examenes/DetalleExamen";
 
 // 🆕 Gestión de Tareas
 import TareasDocente from "./pages/Tareas/TareasDocente";
@@ -162,6 +163,15 @@ function App() {
                   <FormularioExamen />
                 </DocenteRoute>
               }
+            />
+
+            {/* Ver examen - detalle de examen */}
+
+            <Route 
+              path="examenes/:id"
+              element={
+                <DetalleExamen />
+              } 
             />
 
             {/* Editar examen - Solo docentes/admin */}

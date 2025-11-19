@@ -1,5 +1,6 @@
 import { Navbar, Nav, NavDropdown, Container, Button } from "react-bootstrap";
 import { BsBell, BsPersonCircle, BsList } from "react-icons/bs";
+import NotificacionBadge from "./Notificaciones/NotificacionBadge";
 
 const NavbarDashboard = ({ usuario, onLogout, onToggleSidebar }) => {
   return (
@@ -24,6 +25,7 @@ const NavbarDashboard = ({ usuario, onLogout, onToggleSidebar }) => {
             <Nav.Link href="/notificaciones">
               <BsBell size={18} className="me-1" /> Notificaciones
             </Nav.Link>
+            <NotificacionBadge />
             <NavDropdown
               title={
                 <>

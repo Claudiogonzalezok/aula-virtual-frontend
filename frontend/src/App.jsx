@@ -45,8 +45,30 @@ import CrearEditarTarea from "./pages/Tareas/CrearTarea";
 import DetalleTarea from "./pages/Tareas/DetalleTarea";
 import CalificarEntregas from "./pages/Tareas/CalificarEntrega";
 
+// Gestion de reportes, comunicacion y notificaciones
+import ReportesGeneral from "./pages/Reportes/ReportesGeneral";
+import Foros from "./pages/Comunicacion/Foros";
+import ForoDetalle from "./pages/Comunicacion/ForoDetalle";
+import Mensajes from "./pages/Comunicacion/Mensajes";
+import CentroNotificaciones from "./pages/Notificaciones/CentroNotificaciones";
+
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function App() {
-  return (
+      <ToastContainer
+      position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="colored"
+    />
+  return (    
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -285,6 +307,13 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Gestion de reportes mensajes y comunicaciones */}
+          <Route path="reportes" element={<DocenteRoute><ReportesGeneral /></DocenteRoute>} />
+          <Route path="foros/:cursoId" element={<ProtectedRoute><Foros /></ProtectedRoute>} />
+          <Route path="foros/:id/detalle" element={<ProtectedRoute><ForoDetalle /></ProtectedRoute>} />
+          <Route path="mensajes" element={<ProtectedRoute><Mensajes /></ProtectedRoute>} />
+          <Route path="notificaciones" element={<ProtectedRoute><CentroNotificaciones /></ProtectedRoute>} />
 
             {/* ========== OTRAS RUTAS FUTURAS ========== */}
             {/* Aquí puedes agregar: Notas, Foros, etc. */}

@@ -22,9 +22,7 @@ const NavbarDashboard = ({ usuario, onLogout, onToggleSidebar }) => {
         <Navbar.Toggle aria-controls="navbar-dashboard" />
         <Navbar.Collapse id="navbar-dashboard" className="justify-content-end">
           <Nav>
-            <Nav.Link href="/notificaciones">
-              <BsBell size={18} className="me-1" /> Notificaciones
-            </Nav.Link>
+
             <NotificacionBadge />
             <NavDropdown
               title={

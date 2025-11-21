@@ -13,8 +13,9 @@ import {
   BsCardChecklist,
   BsFileEarmarkText,
   BsCalendar,
-  BsFileEarmark,
-  BsClipboard2Check, // 🆕 AGREGAR ESTE IMPORT
+  BsClipboard2Check,
+  BsBell,
+  BsEnvelope,
 } from "react-icons/bs";
 
 const DashboardLayout = () => {
@@ -31,9 +32,12 @@ const DashboardLayout = () => {
           { to: "/dashboard", icon: <BsHouseDoor />, label: "Inicio" },
           { to: "/dashboard/usuarios", icon: <BsPeople />, label: "Usuarios" },
           { to: "/dashboard/cursos", icon: <BsBook />, label: "Cursos" },
-          { to: "/dashboard/tareas", icon: <BsClipboard2Check />, label: "Tareas" }, // 🆕 AGREGAR
+          { to: "/dashboard/clases", icon: <BsCalendar />, label: "Clases" },
+          { to: "/dashboard/tareas", icon: <BsClipboard2Check />, label: "Tareas" },
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
           { to: "/dashboard/reportes", icon: <BsFileEarmarkText />, label: "Reportes" },
+          { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
+          { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },
           { to: "/dashboard/configuracion", icon: <BsGear />, label: "Configuración" },
         ];
       case "docente":
@@ -41,17 +45,22 @@ const DashboardLayout = () => {
           { to: "/dashboard", icon: <BsHouseDoor />, label: "Inicio" },
           { to: "/dashboard/cursos", icon: <BsBook />, label: "Mis Cursos" },
           { to: "/dashboard/clases", icon: <BsCalendar />, label: "Mis Clases" },
-          { to: "/dashboard/tareas", icon: <BsClipboard2Check />, label: "Tareas" }, // 🆕 AGREGAR
+          { to: "/dashboard/tareas", icon: <BsClipboard2Check />, label: "Tareas" },
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
-          { to: "/dashboard/mensajes", icon: <BsChatDots />, label: "Mensajes" },
+          { to: "/dashboard/usuarios", icon: <BsPeople />, label: "Alumnos" },
+          { to: "/dashboard/reportes", icon: <BsFileEarmarkText />, label: "Reportes" },
+          { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
+          { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },
         ];
       case "alumno":
         return [
           { to: "/dashboard", icon: <BsHouseDoor />, label: "Inicio" },
           { to: "/dashboard/cursos", icon: <BsBook />, label: "Mis Cursos" },
+          { to: "/dashboard/mis-tareas", icon: <BsClipboard2Check />, label: "Mis Tareas" },
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
-          { to: "/dashboard/mis-tareas", icon: <BsClipboard2Check />, label: "Mis Tareas" }, // 🔥 CAMBIAR RUTA
           { to: "/dashboard/notas", icon: <BsCardChecklist />, label: "Mis Notas" },
+          { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
+          { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },
         ];
       default:
         return [];

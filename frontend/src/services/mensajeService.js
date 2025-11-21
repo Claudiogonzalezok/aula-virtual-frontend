@@ -20,3 +20,4 @@ export const marcarComoLeido = async (mensajeId) => {
   const { data } = await API.put(`/mensajes/${mensajeId}/leido`);
   return data;
 };
+

@@ -7,7 +7,12 @@ import {
   FaClipboardList, 
   FaUsers,
   FaBookOpen,
-  FaClock 
+  FaClock,
+  FaFileAlt,
+  FaCalendarAlt,
+  FaChartLine,
+  FaEnvelope,
+  FaBell
 } from "react-icons/fa";
 import API from "../../services/api";
 
@@ -117,7 +122,7 @@ const DocenteDashboard = ({ usuario }) => {
             <Col>
               <Card className="shadow border-0 h-100 hover-card">
                 <Card.Body className="text-center">
-                  <FaPlusCircle size={40} className="text-primary mb-3" />
+                  <FaCalendarAlt size={40} className="text-primary mb-3" />
                   <Card.Title>Mis Clases</Card.Title>
                   <Card.Text className="text-muted">
                     Ve todas las clases programadas con calendario y tabla.
@@ -132,13 +137,88 @@ const DocenteDashboard = ({ usuario }) => {
             <Col>
               <Card className="shadow border-0 h-100 hover-card">
                 <Card.Body className="text-center">
+                  <FaFileAlt size={40} className="text-warning mb-3" />
+                  <Card.Title>Tareas</Card.Title>
+                  <Card.Text className="text-muted">
+                    Crea, edita y califica las tareas de tus cursos.
+                  </Card.Text>
+                  <Link to="/dashboard/tareas" className="btn btn-warning w-100 text-white">
+                    Gestionar Tareas
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col>
+              <Card className="shadow border-0 h-100 hover-card">
+                <Card.Body className="text-center">
                   <FaClipboardList size={40} className="text-info mb-3" />
                   <Card.Title>Exámenes</Card.Title>
                   <Card.Text className="text-muted">
                     Administra y califica exámenes de tus alumnos.
                   </Card.Text>
                   <Link to="/dashboard/examenes" className="btn btn-info w-100 text-white">
-                    Gestionar
+                    Gestionar Exámenes
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col>
+              <Card className="shadow border-0 h-100 hover-card">
+                <Card.Body className="text-center">
+                  <FaUsers size={40} className="text-secondary mb-3" />
+                  <Card.Title>Alumnos</Card.Title>
+                  <Card.Text className="text-muted">
+                    Gestiona los alumnos de tus cursos.
+                  </Card.Text>
+                  <Link to="/dashboard/usuarios" className="btn btn-secondary w-100">
+                    Ver Alumnos
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col>
+              <Card className="shadow border-0 h-100 hover-card">
+                <Card.Body className="text-center">
+                  <FaChartLine size={40} className="text-danger mb-3" />
+                  <Card.Title>Reportes</Card.Title>
+                  <Card.Text className="text-muted">
+                    Visualiza estadísticas y reportes de tus cursos.
+                  </Card.Text>
+                  <Link to="/dashboard/reportes" className="btn btn-danger w-100">
+                    Ver Reportes
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col>
+              <Card className="shadow border-0 h-100 hover-card">
+                <Card.Body className="text-center">
+                  <FaEnvelope size={40} className="text-primary mb-3" />
+                  <Card.Title>Mensajes</Card.Title>
+                  <Card.Text className="text-muted">
+                    Comunícate con tus alumnos y colegas.
+                  </Card.Text>
+                  <Link to="/dashboard/mensajes" className="btn btn-primary w-100">
+                    Ir a Mensajes
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col>
+              <Card className="shadow border-0 h-100 hover-card">
+                <Card.Body className="text-center">
+                  <FaBell size={40} className="text-success mb-3" />
+                  <Card.Title>Notificaciones</Card.Title>
+                  <Card.Text className="text-muted">
+                    Revisa las notificaciones de tus cursos.
+                  </Card.Text>
+                  <Link to="/dashboard/notificaciones" className="btn btn-success w-100">
+                    Ver Notificaciones
                   </Link>
                 </Card.Body>
               </Card>

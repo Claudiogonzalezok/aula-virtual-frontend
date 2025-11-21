@@ -12,6 +12,7 @@ import {
   Alert,
   Badge,
   InputGroup,
+  Modal,
 } from "react-bootstrap";
 import { AuthContext } from "../../context/AuthContext";
 import {
@@ -20,8 +21,9 @@ import {
   enviarMensaje,
   marcarComoLeido,
 } from "../../services/mensajeService";
+import API from "../../services/api";
 import TarjetaMensaje from "../../components/Comunicacion/TarjetaMensaje";
-import { FaPaperPlane, FaSearch, FaUser } from "react-icons/fa";
+import { FaPaperPlane, FaSearch, FaUser, FaPlus } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -35,6 +37,13 @@ const Mensajes = () => {
   const [enviando, setEnviando] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const mensajesEndRef = useRef(null);
+
+  // ✅ NUEVO: Estado para modal de nuevo mensaje
+  const [showModalNuevo, setShowModalNuevo] = useState(false);
+  const [usuarios, setUsuarios] = useState([]);
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
+  const [busquedaUsuarios, setBusquedaUsuarios] = useState("");
+  const [mensajeNuevo, setMensajeNuevo] = useState("");
 
   useEffect(() => {
     cargarConversaciones();
@@ -104,8 +113,75 @@ const Mensajes = () => {
     }
   };
 
+  // ✅ NUEVO: Cargar usuarios para nuevo mensaje
+  const cargarUsuarios = async () => {
+    try {
+      const { data } = await API.get("/usuarios");
+      // Filtrar el usuario actual
+      const usuariosFiltrados = (data.usuarios || data).filter(
+        (u) => u._id !== usuario._id
+      );
+      setUsuarios(usuariosFiltrados);
+    } catch (err) {
+      console.error("Error al cargar usuarios:", err);
+    }
+  };
+
+  // ✅ NUEVO: Abrir modal de nuevo mensaje
+  const handleNuevoMensaje = () => {
+    setShowModalNuevo(true);
+    cargarUsuarios();
+  };
+
+  // ✅ NUEVO: Enviar primer mensaje
+  const handleEnviarPrimerMensaje = async () => {
+    if (!usuarioSeleccionado || !mensajeNuevo.trim()) {
+      alert("Selecciona un usuario y escribe un mensaje");
+      return;
+    }
+
+    try {
+      setEnviando(true);
+      await enviarMensaje(usuarioSeleccionado._id, mensajeNuevo);
+      
+      // Cerrar modal
+      setShowModalNuevo(false);
+      setUsuarioSeleccionado(null);
+      setMensajeNuevo("");
+      setBusquedaUsuarios("");
+      
+      // Recargar conversaciones y seleccionar la nueva
+      await cargarConversaciones();
+      
+      // Buscar y seleccionar la conversación nueva
+      const conversacionNueva = conversaciones.find(
+        (c) => c._id === usuarioSeleccionado._id
+      );
+      if (conversacionNueva) {
+        setConversacionActiva(conversacionNueva);
+      } else {
+        // Si no está en la lista, crear objeto temporal
+        setConversacionActiva({
+          _id: usuarioSeleccionado._id,
+          nombre: usuarioSeleccionado.nombre,
+          rol: usuarioSeleccionado.rol,
+        });
+      }
+    } catch (err) {
+      alert("Error al enviar mensaje");
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  // ✅ Filtrar conversaciones
   const conversacionesFiltradas = conversaciones.filter((conv) =>
     conv.nombre?.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
+  // ✅ Filtrar usuarios
+  const usuariosFiltrados = usuarios.filter((u) =>
+    u.nombre?.toLowerCase().includes(busquedaUsuarios.toLowerCase())
   );
 
   if (loading) {
@@ -121,7 +197,14 @@ const Mensajes = () => {
     <Container fluid className="mt-4 mb-5">
       <Row>
         <Col>
-          <h2 className="mb-4">💬 Mensajes</h2>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2>💬 Mensajes</h2>
+            {/* ✅ NUEVO: Botón para nuevo mensaje */}
+            <Button variant="primary" onClick={handleNuevoMensaje}>
+              <FaPlus className="me-2" />
+              Nuevo Mensaje
+            </Button>
+          </div>
         </Col>
       </Row>
 
@@ -144,7 +227,15 @@ const Mensajes = () => {
             <Card.Body className="p-0" style={{ overflowY: "auto" }}>
               {conversacionesFiltradas.length === 0 ? (
                 <div className="text-center py-5 text-muted">
+                  <FaUser size={50} className="mb-3" />
                   <p>No hay conversaciones</p>
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={handleNuevoMensaje}
+                  >
+                    Iniciar conversación
+                  </Button>
                 </div>
               ) : (
                 <ListGroup variant="flush">
@@ -173,7 +264,8 @@ const Mensajes = () => {
                             )}
                           </div>
                           <small className="text-muted">
-                            {conv.ultimoMensaje?.substring(0, 40)}...
+                            {conv.ultimoMensaje?.substring(0, 40)}
+                            {conv.ultimoMensaje?.length > 40 ? "..." : ""}
                           </small>
                           <br />
                           <small className="text-muted">
@@ -202,6 +294,10 @@ const Mensajes = () => {
                   <FaPaperPlane size={60} className="mb-3" />
                   <h5>Selecciona una conversación</h5>
                   <p>Elige un contacto para comenzar a chatear</p>
+                  <Button variant="primary" onClick={handleNuevoMensaje}>
+                    <FaPlus className="me-2" />
+                    Iniciar Nueva Conversación
+                  </Button>
                 </div>
               </Card.Body>
             </Card>
@@ -222,6 +318,8 @@ const Mensajes = () => {
                     <small>
                       {conversacionActiva.rol === "docente"
                         ? "Docente"
+                        : conversacionActiva.rol === "admin"
+                        ? "Administrador"
                         : "Alumno"}
                     </small>
                   </div>
@@ -279,6 +377,127 @@ const Mensajes = () => {
           )}
         </Col>
       </Row>
+
+      {/* ✅ NUEVO: Modal para Nuevo Mensaje */}
+      <Modal
+        show={showModalNuevo}
+        onHide={() => setShowModalNuevo(false)}
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Nuevo Mensaje</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {/* Búsqueda de usuarios */}
+          <Form.Group className="mb-3">
+            <Form.Label>Buscar usuario</Form.Label>
+            <InputGroup>
+              <InputGroup.Text>
+                <FaSearch />
+              </InputGroup.Text>
+              <Form.Control
+                placeholder="Escribe el nombre del usuario..."
+                value={busquedaUsuarios}
+                onChange={(e) => setBusquedaUsuarios(e.target.value)}
+              />
+            </InputGroup>
+          </Form.Group>
+
+          {/* Lista de usuarios */}
+          <div
+            style={{
+              maxHeight: "300px",
+              overflowY: "auto",
+              border: "1px solid #dee2e6",
+              borderRadius: "5px",
+            }}
+          >
+            {usuariosFiltrados.length === 0 ? (
+              <div className="text-center text-muted py-4">
+                No se encontraron usuarios
+              </div>
+            ) : (
+              <ListGroup variant="flush">
+                {usuariosFiltrados.map((u) => (
+                  <ListGroup.Item
+                    key={u._id}
+                    action
+                    active={usuarioSeleccionado?._id === u._id}
+                    onClick={() => setUsuarioSeleccionado(u)}
+                  >
+                    <div className="d-flex align-items-center">
+                      <div
+                        className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                        style={{ width: "40px", height: "40px" }}
+                      >
+                        <FaUser />
+                      </div>
+                      <div>
+                        <strong>{u.nombre}</strong>
+                        <br />
+                        <small className="text-muted">
+                          {u.email} •{" "}
+                          {u.rol === "docente"
+                            ? "Docente"
+                            : u.rol === "admin"
+                            ? "Administrador"
+                            : "Alumno"}
+                        </small>
+                      </div>
+                    </div>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            )}
+          </div>
+
+          {/* Mensaje */}
+          {usuarioSeleccionado && (
+            <Form.Group className="mt-3">
+              <Form.Label>
+                Mensaje para <strong>{usuarioSeleccionado.nombre}</strong>
+              </Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                placeholder="Escribe tu mensaje..."
+                value={mensajeNuevo}
+                onChange={(e) => setMensajeNuevo(e.target.value)}
+              />
+            </Form.Group>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setShowModalNuevo(false);
+              setUsuarioSeleccionado(null);
+              setMensajeNuevo("");
+              setBusquedaUsuarios("");
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleEnviarPrimerMensaje}
+            disabled={!usuarioSeleccionado || !mensajeNuevo.trim() || enviando}
+          >
+            {enviando ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Enviando...
+              </>
+            ) : (
+              <>
+                <FaPaperPlane className="me-2" />
+                Enviar Mensaje
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

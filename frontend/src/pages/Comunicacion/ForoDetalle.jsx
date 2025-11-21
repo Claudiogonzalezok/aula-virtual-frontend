@@ -20,7 +20,7 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
 const ForoDetalle = () => {
-  const { foroId } = useParams();
+  const { foroId, id } = useParams(); // ✅ Aceptar ambos parámetros
   const navigate = useNavigate();
   const { usuario } = useContext(AuthContext);
   const [foro, setForo] = useState(null);
@@ -29,17 +29,32 @@ const ForoDetalle = () => {
   const [respuesta, setRespuesta] = useState("");
   const [enviando, setEnviando] = useState(false);
 
+  // ✅ Usar el ID correcto (puede venir como foroId o id)
+  const idForo = foroId || id;
+
   useEffect(() => {
-    cargarForo();
-  }, [foroId]);
+    if (idForo) {
+      cargarForo();
+    } else {
+      setError("ID de foro no válido");
+      setLoading(false);
+    }
+  }, [idForo]);
 
   const cargarForo = async () => {
     try {
       setLoading(true);
-      const data = await obtenerForo(foroId);
-      setForo(data);
+      setError(null);
+      const data = await obtenerForo(idForo);
+      console.log("✅ Foro cargado:", data);
+      setForo(data.foro || data);
     } catch (err) {
-      setError(err.response?.data?.msg || "Error al cargar el foro");
+      console.error("❌ Error al cargar foro:", err);
+      setError(
+        err.response?.data?.msg ||
+        err.message ||
+        "Error al cargar el foro. Verifica que la URL sea correcta."
+      );
     } finally {
       setLoading(false);
     }
@@ -47,28 +62,37 @@ const ForoDetalle = () => {
 
   const handleResponder = async (e) => {
     e.preventDefault();
-    if (!respuesta.trim()) return;
+    if (!respuesta.trim()) {
+      alert("Escribe una respuesta");
+      return;
+    }
 
     try {
       setEnviando(true);
-      await responderForo(foroId, respuesta);
+      await responderForo(idForo, respuesta);
       setRespuesta("");
-      cargarForo();
+      cargarForo(); // Recargar foro para mostrar nueva respuesta
     } catch (err) {
-      alert("Error al enviar respuesta");
+      console.error("❌ Error al enviar respuesta:", err);
+      alert("Error al enviar respuesta. Intenta nuevamente.");
     } finally {
       setEnviando(false);
     }
   };
 
   const handleEliminar = async () => {
-    if (!window.confirm("¿Eliminar este foro? Esta acción no se puede deshacer."))
+    if (
+      !window.confirm(
+        "¿Eliminar este foro? Esta acción no se puede deshacer y se eliminarán todas las respuestas."
+      )
+    )
       return;
 
     try {
-      await eliminarForo(foroId);
-      navigate(-1);
+      await eliminarForo(idForo);
+      navigate(-1); // Volver atrás
     } catch (err) {
+      console.error("❌ Error al eliminar foro:", err);
       alert("Error al eliminar foro");
     }
   };
@@ -87,6 +111,7 @@ const ForoDetalle = () => {
       <Container className="mt-5">
         <Alert variant="danger">{error}</Alert>
         <Button variant="secondary" onClick={() => navigate(-1)}>
+          <FaArrowLeft className="me-2" />
           Volver
         </Button>
       </Container>
@@ -98,6 +123,7 @@ const ForoDetalle = () => {
       <Container className="mt-5">
         <Alert variant="warning">Foro no encontrado</Alert>
         <Button variant="secondary" onClick={() => navigate(-1)}>
+          <FaArrowLeft className="me-2" />
           Volver
         </Button>
       </Container>
@@ -114,7 +140,9 @@ const ForoDetalle = () => {
               <FaArrowLeft className="me-2" />
               Volver
             </Button>
-            {(usuario._id === foro.autor?._id || usuario.rol === "docente") && (
+            {(usuario._id === foro.autor?._id ||
+              usuario.rol === "docente" ||
+              usuario.rol === "admin") && (
               <Button variant="outline-danger" onClick={handleEliminar}>
                 <FaTrash className="me-2" />
                 Eliminar Foro
@@ -137,6 +165,11 @@ const ForoDetalle = () => {
             <span>
               <FaUser className="me-1" />
               {foro.autor?.nombre || "Usuario"}
+              {foro.autor?.rol === "docente" && (
+                <Badge bg="success" className="ms-2">
+                  Docente
+                </Badge>
+              )}
             </span>
             <span>
               <FaClock className="me-1" />
@@ -180,6 +213,11 @@ const ForoDetalle = () => {
                           Docente
                         </Badge>
                       )}
+                      {resp.autor?.rol === "admin" && (
+                        <Badge bg="danger" className="ms-2">
+                          Administrador
+                        </Badge>
+                      )}
                     </div>
                     <small className="text-muted">
                       {formatDistanceToNow(new Date(resp.createdAt), {
@@ -199,7 +237,8 @@ const ForoDetalle = () => {
       ) : (
         <Card className="mb-4">
           <Card.Body className="text-center text-muted py-4">
-            No hay respuestas aún. ¡Sé el primero en responder!
+            <FaReply size={40} className="mb-3" />
+            <p>No hay respuestas aún. ¡Sé el primero en responder!</p>
           </Card.Body>
         </Card>
       )}
@@ -220,11 +259,11 @@ const ForoDetalle = () => {
                 rows={4}
                 value={respuesta}
                 onChange={(e) => setRespuesta(e.target.value)}
-                placeholder="Escribe tu respuesta aquí..."
+                placeholder="Escribe tu respuesta aquí... Sé respetuoso y constructivo."
                 required
               />
             </Form.Group>
-            <Button type="submit" variant="primary" disabled={enviando}>
+            <Button type="submit" variant="primary" disabled={enviando || !respuesta.trim()}>
               {enviando ? (
                 <>
                   <Spinner animation="border" size="sm" className="me-2" />

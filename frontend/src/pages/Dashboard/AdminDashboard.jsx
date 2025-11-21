@@ -1,7 +1,19 @@
 import { useState, useEffect } from "react";
 import { Card, Row, Col, Badge, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { FaUsers, FaBookOpen, FaChartLine, FaUserGraduate, FaChalkboardTeacher } from "react-icons/fa";
+import { 
+  FaUsers, 
+  FaBookOpen, 
+  FaChartLine, 
+  FaUserGraduate, 
+  FaChalkboardTeacher,
+  FaClipboardList,
+  FaFileAlt,
+  FaCalendarAlt,
+  FaEnvelope,
+  FaBell,
+  FaCog
+} from "react-icons/fa";
 import API from "../../services/api";
 
 const AdminDashboard = ({ usuario }) => {
@@ -129,13 +141,103 @@ const AdminDashboard = ({ usuario }) => {
         <Col>
           <Card className="shadow border-0 h-100 hover-card">
             <Card.Body className="text-center">
-              <FaChartLine size={40} className="text-info mb-3" />
+              <FaCalendarAlt size={40} className="text-info mb-3" />
+              <Card.Title>Clases Programadas</Card.Title>
+              <Card.Text className="text-muted">
+                Visualiza todas las clases en calendario y tabla.
+              </Card.Text>
+              <Link to="/dashboard/clases" className="btn btn-info w-100 text-white">
+                Ver Clases
+              </Link>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col>
+          <Card className="shadow border-0 h-100 hover-card">
+            <Card.Body className="text-center">
+              <FaFileAlt size={40} className="text-warning mb-3" />
+              <Card.Title>Gestión de Tareas</Card.Title>
+              <Card.Text className="text-muted">
+                Administra las tareas de todos los cursos.
+              </Card.Text>
+              <Link to="/dashboard/tareas" className="btn btn-warning w-100 text-white">
+                Ver Tareas
+              </Link>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col>
+          <Card className="shadow border-0 h-100 hover-card">
+            <Card.Body className="text-center">
+              <FaClipboardList size={40} className="text-danger mb-3" />
+              <Card.Title>Gestión de Exámenes</Card.Title>
+              <Card.Text className="text-muted">
+                Supervisa todos los exámenes del sistema.
+              </Card.Text>
+              <Link to="/dashboard/examenes" className="btn btn-danger w-100">
+                Ver Exámenes
+              </Link>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col>
+          <Card className="shadow border-0 h-100 hover-card">
+            <Card.Body className="text-center">
+              <FaChartLine size={40} className="text-primary mb-3" />
               <Card.Title>Reportes</Card.Title>
               <Card.Text className="text-muted">
                 Visualiza métricas generales de uso del aula virtual.
               </Card.Text>
-              <Link to="/dashboard/reportes" className="btn btn-info w-100 text-white">
+              <Link to="/dashboard/reportes" className="btn btn-primary w-100">
                 Ver Reportes
+              </Link>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col>
+          <Card className="shadow border-0 h-100 hover-card">
+            <Card.Body className="text-center">
+              <FaEnvelope size={40} className="text-success mb-3" />
+              <Card.Title>Mensajería</Card.Title>
+              <Card.Text className="text-muted">
+                Comunícate con docentes y alumnos del sistema.
+              </Card.Text>
+              <Link to="/dashboard/mensajes" className="btn btn-success w-100">
+                Ir a Mensajes
+              </Link>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col>
+          <Card className="shadow border-0 h-100 hover-card">
+            <Card.Body className="text-center">
+              <FaBell size={40} className="text-info mb-3" />
+              <Card.Title>Notificaciones</Card.Title>
+              <Card.Text className="text-muted">
+                Revisa las notificaciones del sistema.
+              </Card.Text>
+              <Link to="/dashboard/notificaciones" className="btn btn-info w-100 text-white">
+                Ver Notificaciones
+              </Link>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col>
+          <Card className="shadow border-0 h-100 hover-card">
+            <Card.Body className="text-center">
+              <FaCog size={40} className="text-secondary mb-3" />
+              <Card.Title>Configuración</Card.Title>
+              <Card.Text className="text-muted">
+                Ajusta las configuraciones generales del sistema.
+              </Card.Text>
+              <Link to="/dashboard/configuracion" className="btn btn-secondary w-100">
+                Configurar
               </Link>
             </Card.Body>
           </Card>

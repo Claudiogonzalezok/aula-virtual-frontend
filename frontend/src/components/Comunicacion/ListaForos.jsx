@@ -26,11 +26,12 @@ const ListaForos = ({ foros }) => {
         <ListGroup.Item key={foro._id} className="mb-3 shadow-sm">
           <div className="d-flex justify-content-between align-items-start">
             <div className="flex-grow-1">
+              {/* ✅ CORREGIDO: Añadir /detalle a la ruta */}
               <Link
-                to={`/dashboard/foros/${foro._id}`}
+                to={`/dashboard/foros/${foro._id}/detalle`}
                 className="text-decoration-none"
               >
-                <h5 className="mb-2">{foro.titulo}</h5>
+                <h5 className="mb-2 text-primary">{foro.titulo}</h5>
               </Link>
               <p className="text-muted mb-2">
                 {foro.contenido.length > 200
@@ -56,7 +57,7 @@ const ListaForos = ({ foros }) => {
               </div>
             </div>
             <div className="text-end">
-              <Badge bg="primary" pill>
+              <Badge bg="primary" pill className="fs-6">
                 {foro.respuestas?.length || 0}
               </Badge>
             </div>

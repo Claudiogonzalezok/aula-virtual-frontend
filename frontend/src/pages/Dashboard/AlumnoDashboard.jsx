@@ -7,7 +7,10 @@ import {
   FaCommentDots, 
   FaBookOpen,
   FaChalkboard,
-  FaClock 
+  FaClock,
+  FaClipboardList,
+  FaEnvelope,
+  FaBell
 } from "react-icons/fa";
 import API from "../../services/api";
 
@@ -135,6 +138,42 @@ const AlumnoDashboard = ({ usuario }) => {
             <Col>
               <Card className="shadow border-0 h-100 hover-card">
                 <Card.Body className="text-center">
+                  <FaClipboardList size={40} style={{ color: "#17a2b8" }} className="mb-3" />
+                  <Card.Title>Mis Tareas</Card.Title>
+                  <Card.Text className="text-muted">
+                    Consulta y entrega tus tareas pendientes.
+                  </Card.Text>
+                  <Link 
+                    to="/dashboard/mis-tareas" 
+                    className="btn btn-info w-100 text-white"
+                  >
+                    Ver Tareas
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col>
+              <Card className="shadow border-0 h-100 hover-card">
+                <Card.Body className="text-center">
+                  <FaBookOpen size={40} style={{ color: "#dc3545" }} className="mb-3" />
+                  <Card.Title>Exámenes</Card.Title>
+                  <Card.Text className="text-muted">
+                    Realiza tus exámenes y consulta resultados.
+                  </Card.Text>
+                  <Link 
+                    to="/dashboard/examenes" 
+                    className="btn btn-danger w-100"
+                  >
+                    Ver Exámenes
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col>
+              <Card className="shadow border-0 h-100 hover-card">
+                <Card.Body className="text-center">
                   <FaStar size={40} style={{ color: "#ffc107" }} className="mb-3" />
                   <Card.Title>Mis Notas</Card.Title>
                   <Card.Text className="text-muted">
@@ -153,14 +192,51 @@ const AlumnoDashboard = ({ usuario }) => {
             <Col>
               <Card className="shadow border-0 h-100 hover-card">
                 <Card.Body className="text-center">
-                  <FaCommentDots size={40} style={{ color: "#17a2b8" }} className="mb-3" />
+                  <FaEnvelope size={40} style={{ color: "#28a745" }} className="mb-3" />
+                  <Card.Title>Mensajes</Card.Title>
+                  <Card.Text className="text-muted">
+                    Comunícate con tus docentes y compañeros.
+                  </Card.Text>
+                  <Link 
+                    to="/dashboard/mensajes" 
+                    className="btn btn-success w-100"
+                  >
+                    Ir a Mensajes
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col>
+              <Card className="shadow border-0 h-100 hover-card">
+                <Card.Body className="text-center">
+                  <FaBell size={40} style={{ color: "#007bff" }} className="mb-3" />
+                  <Card.Title>Notificaciones</Card.Title>
+                  <Card.Text className="text-muted">
+                    Revisa tus notificaciones importantes.
+                  </Card.Text>
+                  <Link 
+                    to="/dashboard/notificaciones" 
+                    className="btn btn-primary w-100"
+                  >
+                    Ver Notificaciones
+                  </Link>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col>
+              <Card className="shadow border-0 h-100 hover-card">
+                <Card.Body className="text-center">
+                  <FaCommentDots size={40} style={{ color: "#6f42c1" }} className="mb-3" />
                   <Card.Title>Foros</Card.Title>
                   <Card.Text className="text-muted">
                     Participa en los foros de tus clases.
                   </Card.Text>
                   <Link 
                     to="/dashboard/foros" 
-                    className="btn btn-info w-100 text-white"
+                    className="btn w-100 text-white"
+                    style={{ backgroundColor: "#6f42c1" }}
                   >
                     Ir al Foro
                   </Link>

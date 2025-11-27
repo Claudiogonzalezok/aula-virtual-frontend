@@ -12,7 +12,8 @@ import {
   FaCalendarAlt,
   FaChartLine,
   FaEnvelope,
-  FaBell
+  FaBell,
+  FaUserGraduate
 } from "react-icons/fa";
 import API from "../../services/api";
 
@@ -164,16 +165,17 @@ const DocenteDashboard = ({ usuario }) => {
               </Card>
             </Col>
 
+            {/* 🆕 NUEVA TARJETA: Calificaciones de Alumnos */}
             <Col>
               <Card className="shadow border-0 h-100 hover-card">
                 <Card.Body className="text-center">
-                  <FaUsers size={40} className="text-secondary mb-3" />
-                  <Card.Title>Alumnos</Card.Title>
+                  <FaUserGraduate size={40} className="text-secondary mb-3" />
+                  <Card.Title>Calificaciones</Card.Title>
                   <Card.Text className="text-muted">
-                    Gestiona los alumnos de tus cursos.
+                    Consulta notas y exporta informes de tus alumnos.
                   </Card.Text>
-                  <Link to="/dashboard/usuarios" className="btn btn-secondary w-100">
-                    Ver Alumnos
+                  <Link to="/dashboard/calificaciones" className="btn btn-secondary w-100">
+                    Ver Calificaciones
                   </Link>
                 </Card.Body>
               </Card>

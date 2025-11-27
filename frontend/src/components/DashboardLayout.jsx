@@ -16,6 +16,7 @@ import {
   BsClipboard2Check,
   BsBell,
   BsEnvelope,
+  BsMortarboard,
 } from "react-icons/bs";
 
 const DashboardLayout = () => {
@@ -35,6 +36,7 @@ const DashboardLayout = () => {
           { to: "/dashboard/clases", icon: <BsCalendar />, label: "Clases" },
           { to: "/dashboard/tareas", icon: <BsClipboard2Check />, label: "Tareas" },
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
+          { to: "/dashboard/calificaciones", icon: <BsMortarboard />, label: "Calificaciones" },
           { to: "/dashboard/reportes", icon: <BsFileEarmarkText />, label: "Reportes" },
           { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
           { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },
@@ -47,7 +49,7 @@ const DashboardLayout = () => {
           { to: "/dashboard/clases", icon: <BsCalendar />, label: "Mis Clases" },
           { to: "/dashboard/tareas", icon: <BsClipboard2Check />, label: "Tareas" },
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
-          { to: "/dashboard/usuarios", icon: <BsPeople />, label: "Alumnos" },
+          { to: "/dashboard/calificaciones", icon: <BsMortarboard />, label: "Calificaciones" },
           { to: "/dashboard/reportes", icon: <BsFileEarmarkText />, label: "Reportes" },
           { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
           { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },

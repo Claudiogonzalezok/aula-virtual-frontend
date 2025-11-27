@@ -52,6 +52,9 @@ import ForoDetalle from "./pages/Comunicacion/ForoDetalle";
 import Mensajes from "./pages/Comunicacion/Mensajes";
 import CentroNotificaciones from "./pages/Notificaciones/CentroNotificaciones";
 
+// Gestion de calificaciones
+import CalificacionesAlumnos from "./pages/Calificaciones/CalificacionesAlumnos";
+
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -314,6 +317,16 @@ function App() {
           <Route path="foros/:id/detalle" element={<ProtectedRoute><ForoDetalle /></ProtectedRoute>} />
           <Route path="mensajes" element={<ProtectedRoute><Mensajes /></ProtectedRoute>} />
           <Route path="notificaciones" element={<ProtectedRoute><CentroNotificaciones /></ProtectedRoute>} />
+
+                    {/* ========== CALIFICACIONES DE ALUMNOS ========== */}
+          <Route
+            path="calificaciones"
+            element={
+              <DocenteRoute>
+                <CalificacionesAlumnos />
+              </DocenteRoute>
+            }
+          />
 
             {/* ========== OTRAS RUTAS FUTURAS ========== */}
             {/* Aquí puedes agregar: Notas, Foros, etc. */}

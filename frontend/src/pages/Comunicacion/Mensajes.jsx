@@ -116,14 +116,27 @@ const Mensajes = () => {
   // ✅ NUEVO: Cargar usuarios para nuevo mensaje
   const cargarUsuarios = async () => {
     try {
-      const { data } = await API.get("/usuarios");
+      console.log("🔍 Intentando cargar usuarios para mensajería...");
+      console.log("👤 Usuario actual:", usuario);
+      
+      const { data } = await API.get("/usuarios/mensajeria");
+      console.log("📦 Respuesta del servidor:", data);
+      console.log("📊 Usuarios recibidos:", data.usuarios?.length || 0);
+      
       // Filtrar el usuario actual
       const usuariosFiltrados = (data.usuarios || data).filter(
         (u) => u._id !== usuario._id
       );
+      console.log("✅ Usuarios filtrados (sin usuario actual):", usuariosFiltrados.length);
+      
       setUsuarios(usuariosFiltrados);
     } catch (err) {
-      console.error("Error al cargar usuarios:", err);
+      console.error("❌ Error al cargar usuarios:", err);
+      console.error("📄 Detalles del error:", err.response?.data);
+      console.error("🔢 Status code:", err.response?.status);
+      
+      // Mostrar alerta al usuario
+      alert(`Error al cargar usuarios: ${err.response?.data?.msg || err.message}`);
     }
   };
 

@@ -55,6 +55,9 @@ import CentroNotificaciones from "./pages/Notificaciones/CentroNotificaciones";
 // Gestion de calificaciones
 import CalificacionesAlumnos from "./pages/Calificaciones/CalificacionesAlumnos";
 
+// Gestion de notas
+import MisNotas from "./pages/Notas/MisNotas";
+
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -327,6 +330,8 @@ function App() {
               </DocenteRoute>
             }
           />
+
+          <Route path="notas" element={<ProtectedRoute><MisNotas /></ProtectedRoute>} />
 
             {/* ========== OTRAS RUTAS FUTURAS ========== */}
             {/* Aquí puedes agregar: Notas, Foros, etc. */}

@@ -1,17 +1,17 @@
+// frontend/src/pages/DashboardInicio.jsx
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
-// Importamos los dashboards individuales
-import AdminDashboard from "../pages/Dashboard/AdminDashboard";
-import DocenteDashboard from "../pages/Dashboard/DocenteDashboard";
-import AlumnoDashboard from "../pages/Dashboard/AlumnoDashboard";
+// Dashboards por rol
+import AdminDashboard from "./Dashboard/AdminDashboard";
+import DocenteDashboard from "./Dashboard/DocenteDashboard";
+import AlumnoDashboard from "./Dashboard/AlumnoDashboard";
 
 const DashboardInicio = () => {
   const { usuario } = useContext(AuthContext);
 
-  if (!usuario) return null;
-
-  switch (usuario.rol) {
+  // Renderizar dashboard según el rol del usuario
+  switch (usuario?.rol) {
     case "admin":
       return <AdminDashboard usuario={usuario} />;
     case "docente":
@@ -19,7 +19,12 @@ const DashboardInicio = () => {
     case "alumno":
       return <AlumnoDashboard usuario={usuario} />;
     default:
-      return <p>No se reconoce el rol del usuario.</p>;
+      return (
+        <div className="text-center py-5">
+          <h4>Bienvenido al Aula Virtual</h4>
+          <p className="text-muted">Tu rol no tiene un dashboard asignado.</p>
+        </div>
+      );
   }
 };
 

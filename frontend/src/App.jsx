@@ -57,6 +57,8 @@ import CalificacionesAlumnos from "./pages/Calificaciones/CalificacionesAlumnos"
 
 // Gestion de notas
 import MisNotas from "./pages/Notas/MisNotas";
+//Gestion de Perfil
+import Perfil from "./pages/Perfil/Perfil";
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -332,6 +334,8 @@ function App() {
           />
 
           <Route path="notas" element={<ProtectedRoute><MisNotas /></ProtectedRoute>} />
+
+          <Route path="perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
 
             {/* ========== OTRAS RUTAS FUTURAS ========== */}
             {/* Aquí puedes agregar: Notas, Foros, etc. */}

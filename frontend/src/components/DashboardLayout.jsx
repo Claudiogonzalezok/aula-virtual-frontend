@@ -17,6 +17,7 @@ import {
   BsBell,
   BsEnvelope,
   BsMortarboard,
+  BsPersonCircle,
 } from "react-icons/bs";
 
 const DashboardLayout = () => {
@@ -40,6 +41,7 @@ const DashboardLayout = () => {
           { to: "/dashboard/reportes", icon: <BsFileEarmarkText />, label: "Reportes" },
           { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
           { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },
+          { to: "/dashboard/perfil", icon: <BsPersonCircle />, label: "Mi Perfil" },
           { to: "/dashboard/configuracion", icon: <BsGear />, label: "Configuración" },
         ];
       case "docente":
@@ -53,6 +55,7 @@ const DashboardLayout = () => {
           { to: "/dashboard/reportes", icon: <BsFileEarmarkText />, label: "Reportes" },
           { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
           { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },
+          { to: "/dashboard/perfil", icon: <BsPersonCircle />, label: "Mi Perfil" },
         ];
       case "alumno":
         return [
@@ -63,6 +66,7 @@ const DashboardLayout = () => {
           { to: "/dashboard/notas", icon: <BsCardChecklist />, label: "Mis Notas" },
           { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
           { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },
+          { to: "/dashboard/perfil", icon: <BsPersonCircle />, label: "Mi Perfil" },
         ];
       default:
         return [];

@@ -18,6 +18,8 @@ import {
   BsEnvelope,
   BsMortarboard,
   BsPersonCircle,
+  BsClipboardPlus,
+  BsInboxes,
 } from "react-icons/bs";
 
 const DashboardLayout = () => {
@@ -38,6 +40,7 @@ const DashboardLayout = () => {
           { to: "/dashboard/tareas", icon: <BsClipboard2Check />, label: "Tareas" },
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
           { to: "/dashboard/calificaciones", icon: <BsMortarboard />, label: "Calificaciones" },
+          { to: "/dashboard/solicitudes-inscripcion", icon: <BsInboxes />, label: "Solicitudes" },
           { to: "/dashboard/reportes", icon: <BsFileEarmarkText />, label: "Reportes" },
           { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
           { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },
@@ -61,6 +64,7 @@ const DashboardLayout = () => {
         return [
           { to: "/dashboard", icon: <BsHouseDoor />, label: "Inicio" },
           { to: "/dashboard/cursos", icon: <BsBook />, label: "Mis Cursos" },
+          { to: "/dashboard/inscripcion", icon: <BsClipboardPlus />, label: "Inscripción" },
           { to: "/dashboard/mis-tareas", icon: <BsClipboard2Check />, label: "Mis Tareas" },
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
           { to: "/dashboard/notas", icon: <BsCardChecklist />, label: "Mis Notas" },

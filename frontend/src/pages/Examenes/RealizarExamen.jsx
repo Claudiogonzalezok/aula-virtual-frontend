@@ -13,6 +13,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import API from "../../services/api";
 import { FaClock, FaCheckCircle, FaSave } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const RealizarExamen = () => {
   const { id } = useParams();
@@ -38,9 +39,20 @@ const RealizarExamen = () => {
         setTiempoRestante(tiempoRestante - 1);
       }, 1000);
 
+      // Avisos de tiempo
+      if (tiempoRestante === 300) {
+        toast.warning("⏰ Quedan 5 minutos para finalizar el examen", {
+          autoClose: 5000,
+        });
+      } else if (tiempoRestante === 60) {
+        toast.error("⚠️ ¡Último minuto! El examen se enviará automáticamente", {
+          autoClose: false,
+        });
+      }
+
       return () => clearTimeout(timer);
     } else if (tiempoRestante === 0 && iniciarExamen && examen) {
-      // Tiempo agotado, enviar automáticamente
+      toast.info("⏱️ Tiempo agotado. Enviando examen automáticamente...");
       enviarExamen();
     }
   }, [tiempoRestante, iniciarExamen]);
@@ -51,31 +63,34 @@ const RealizarExamen = () => {
       const { data } = await API.get(`/examenes/${id}`);
       setExamen(data);
 
-      // Verificar si ya tiene un intento en progreso
-      const intentoEnProgreso = data.misIntentos?.find(i => i.estado === "en_progreso");
-      
+      const intentoEnProgreso = data.misIntentos?.find(
+        (i) => i.estado === "en_progreso"
+      );
+
       if (intentoEnProgreso) {
         setIntentoId(intentoEnProgreso._id);
         setIniciarExamen(true);
-        
-        // Calcular tiempo restante
-        const tiempoTranscurrido = Math.floor((new Date() - new Date(intentoEnProgreso.fechaInicio)) / 1000);
+
+        const tiempoTranscurrido = Math.floor(
+          (new Date() - new Date(intentoEnProgreso.fechaInicio)) / 1000
+        );
         const tiempoTotal = data.configuracion.duracionMinutos * 60;
         const restante = Math.max(0, tiempoTotal - tiempoTranscurrido);
         setTiempoRestante(restante);
 
-        // Cargar respuestas guardadas si existen
         const respuestasGuardadas = {};
-        intentoEnProgreso.respuestas?.forEach(r => {
+        intentoEnProgreso.respuestas?.forEach((r) => {
           if (r.respuesta) {
             respuestasGuardadas[r.pregunta.toString()] = r.respuesta;
           }
         });
         setRespuestas(respuestasGuardadas);
+
+        toast.info("📝 Continuando examen en progreso...");
       }
     } catch (error) {
       console.error("Error al cargar examen:", error);
-      alert(error.response?.data?.msg || "Error al cargar examen");
+      toast.error(error.response?.data?.msg || "Error al cargar el examen");
       navigate("/dashboard/examenes");
     } finally {
       setLoading(false);
@@ -88,9 +103,10 @@ const RealizarExamen = () => {
       setIntentoId(data.intentoId);
       setTiempoRestante(data.duracionMinutos * 60);
       setIniciarExamen(true);
+      toast.success("✅ ¡Examen iniciado! Buena suerte 🍀");
     } catch (error) {
       console.error("Error al iniciar examen:", error);
-      alert(error.response?.data?.msg || "Error al iniciar examen");
+      toast.error(error.response?.data?.msg || "No se pudo iniciar el examen");
     }
   };
 
@@ -103,22 +119,35 @@ const RealizarExamen = () => {
 
   const enviarExamen = async () => {
     setEnviando(true);
+    setShowConfirmModal(false);
+
     try {
-      const respuestasArray = Object.entries(respuestas).map(([preguntaId, respuesta]) => ({
-        preguntaId,
-        respuesta,
-      }));
+      const respuestasArray = Object.entries(respuestas).map(
+        ([preguntaId, respuesta]) => ({
+          preguntaId,
+          respuesta,
+        })
+      );
 
       const { data } = await API.post(`/examenes/${id}/enviar`, {
         intentoId,
         respuestas: respuestasArray,
       });
 
-      alert(data.msg);
-      navigate(`/dashboard/examenes`);
+      toast.success(data.msg || "🎉 ¡Examen enviado correctamente!", {
+        autoClose: 3000,
+        onClose: () => navigate("/dashboard/examenes"),
+      });
+
+      // Navegar después de un breve delay para que se vea el toast
+      setTimeout(() => {
+        navigate("/dashboard/examenes");
+      }, 2000);
     } catch (error) {
       console.error("Error al enviar examen:", error);
-      alert(error.response?.data?.msg || "Error al enviar examen");
+      toast.error(
+        error.response?.data?.msg || "Error al enviar el examen. Intenta nuevamente."
+      );
     } finally {
       setEnviando(false);
     }
@@ -137,11 +166,14 @@ const RealizarExamen = () => {
   };
 
   const getTiempoColor = () => {
-    const porcentaje = (tiempoRestante / (examen.configuracion.duracionMinutos * 60)) * 100;
+    const porcentaje =
+      (tiempoRestante / (examen.configuracion.duracionMinutos * 60)) * 100;
     if (porcentaje > 50) return "success";
     if (porcentaje > 25) return "warning";
     return "danger";
   };
+
+  // ... resto del JSX igual
 
   if (loading) {
     return (

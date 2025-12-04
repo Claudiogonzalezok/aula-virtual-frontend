@@ -115,7 +115,7 @@ const RealizarExamen = () => {
       });
 
       alert(data.msg);
-      navigate(`/dashboard/examenes/${id}/resultado`);
+      navigate(`/dashboard/examenes`);
     } catch (error) {
       console.error("Error al enviar examen:", error);
       alert(error.response?.data?.msg || "Error al enviar examen");

@@ -106,7 +106,7 @@ const UsuarioEdit = () => {
         </Form.Group>
 
         <div className="d-flex justify-content-between mt-4">
-          <Button variant="secondary" onClick={() => navigate("/usuarios")}>
+          <Button variant="secondary" onClick={() => navigate("/dashboard/usuarios")}>
             Cancelar
           </Button>
           <Button type="submit" variant="primary">

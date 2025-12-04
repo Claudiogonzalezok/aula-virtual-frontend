@@ -15,6 +15,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import API from "../../services/api";
 import { FaPlus, FaTrash, FaSave, FaTimes } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const FormularioExamen = () => {
   const { id } = useParams();
@@ -27,6 +28,10 @@ const FormularioExamen = () => {
   const [errores, setErrores] = useState([]);
   const [showPreguntaModal, setShowPreguntaModal] = useState(false);
   const [preguntaEditando, setPreguntaEditando] = useState(null);
+
+  // Modal de confirmación para eliminar pregunta
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [preguntaAEliminar, setPreguntaAEliminar] = useState(null);
 
   const [formExamen, setFormExamen] = useState({
     titulo: "",
@@ -70,6 +75,7 @@ const FormularioExamen = () => {
       setCursos(data);
     } catch (error) {
       console.error("Error al cargar cursos:", error);
+      toast.error("Error al cargar la lista de cursos");
     }
   };
 
@@ -80,15 +86,22 @@ const FormularioExamen = () => {
         titulo: data.titulo,
         descripcion: data.descripcion || "",
         cursoId: data.curso._id,
-        fechaApertura: data.fechaApertura?.split("T")[0] + "T" + data.fechaApertura?.split("T")[1]?.substring(0, 5),
-        fechaCierre: data.fechaCierre?.split("T")[0] + "T" + data.fechaCierre?.split("T")[1]?.substring(0, 5),
+        fechaApertura:
+          data.fechaApertura?.split("T")[0] +
+          "T" +
+          data.fechaApertura?.split("T")[1]?.substring(0, 5),
+        fechaCierre:
+          data.fechaCierre?.split("T")[0] +
+          "T" +
+          data.fechaCierre?.split("T")[1]?.substring(0, 5),
         configuracion: data.configuracion,
         preguntas: data.preguntas,
         estado: data.estado,
       });
+      toast.success("📝 Examen cargado correctamente");
     } catch (error) {
       console.error("Error al cargar examen:", error);
-      alert("Error al cargar examen");
+      toast.error("Error al cargar el examen");
       navigate("/dashboard/examenes");
     }
   };
@@ -109,7 +122,9 @@ const FormularioExamen = () => {
       erroresTemp.push("La fecha de cierre es requerida");
     }
     if (new Date(formExamen.fechaApertura) >= new Date(formExamen.fechaCierre)) {
-      erroresTemp.push("La fecha de apertura debe ser anterior a la fecha de cierre");
+      erroresTemp.push(
+        "La fecha de apertura debe ser anterior a la fecha de cierre"
+      );
     }
     if (formExamen.preguntas.length === 0) {
       erroresTemp.push("Debes agregar al menos una pregunta");
@@ -122,6 +137,11 @@ const FormularioExamen = () => {
     }
 
     setErrores(erroresTemp);
+
+    if (erroresTemp.length > 0) {
+      toast.error(`⚠️ Hay ${erroresTemp.length} error(es) en el formulario`);
+    }
+
     return erroresTemp.length === 0;
   };
 
@@ -139,16 +159,24 @@ const FormularioExamen = () => {
 
       if (esEdicion) {
         await API.put(`/examenes/${id}`, datos);
-        alert("Examen actualizado exitosamente");
+        toast.success(
+          publicar
+            ? "✅ Examen actualizado y publicado"
+            : "💾 Examen actualizado como borrador"
+        );
       } else {
         await API.post("/examenes", datos);
-        alert("Examen creado exitosamente");
+        toast.success(
+          publicar
+            ? "🎉 ¡Examen creado y publicado!"
+            : "💾 Examen guardado como borrador"
+        );
       }
 
-      navigate("/dashboard/examenes");
+      setTimeout(() => navigate("/dashboard/examenes"), 1500);
     } catch (error) {
       console.error("Error al guardar examen:", error);
-      alert(error.response?.data?.msg || "Error al guardar examen");
+      toast.error(error.response?.data?.msg || "Error al guardar el examen");
     } finally {
       setLoading(false);
     }
@@ -183,7 +211,7 @@ const FormularioExamen = () => {
 
   const eliminarOpcion = (index) => {
     if (formPregunta.opciones.length <= 2) {
-      alert("Debe haber al menos 2 opciones");
+      toast.warning("Debe haber al menos 2 opciones");
       return;
     }
     setFormPregunta({
@@ -194,66 +222,75 @@ const FormularioExamen = () => {
 
   const actualizarOpcion = (index, campo, valor) => {
     const nuevasOpciones = [...formPregunta.opciones];
-    
+
     if (campo === "esCorrecta" && valor) {
-      // Solo una opción puede ser correcta
       nuevasOpciones.forEach((op, i) => {
         op.esCorrecta = i === index;
       });
     } else {
       nuevasOpciones[index][campo] = valor;
     }
-    
+
     setFormPregunta({ ...formPregunta, opciones: nuevasOpciones });
   };
 
   const guardarPregunta = () => {
-    // Validar pregunta
     if (!formPregunta.pregunta.trim()) {
-      alert("La pregunta no puede estar vacía");
+      toast.warning("La pregunta no puede estar vacía");
       return;
     }
 
     if (formPregunta.tipo === "multiple") {
-      if (formPregunta.opciones.some(o => !o.texto.trim())) {
-        alert("Todas las opciones deben tener texto");
+      if (formPregunta.opciones.some((o) => !o.texto.trim())) {
+        toast.warning("Todas las opciones deben tener texto");
         return;
       }
-      if (!formPregunta.opciones.some(o => o.esCorrecta)) {
-        alert("Debes marcar una opción como correcta");
+      if (!formPregunta.opciones.some((o) => o.esCorrecta)) {
+        toast.warning("Debes marcar una opción como correcta");
         return;
       }
     }
 
-    if (formPregunta.tipo === "verdadero_falso" && !formPregunta.respuestaCorrecta) {
-      alert("Debes seleccionar la respuesta correcta");
+    if (
+      formPregunta.tipo === "verdadero_falso" &&
+      !formPregunta.respuestaCorrecta
+    ) {
+      toast.warning("Debes seleccionar la respuesta correcta");
       return;
     }
 
     if (formPregunta.puntaje <= 0) {
-      alert("El puntaje debe ser mayor a 0");
+      toast.warning("El puntaje debe ser mayor a 0");
       return;
     }
 
     const nuevasPreguntas = [...formExamen.preguntas];
-    
+
     if (preguntaEditando !== null) {
       nuevasPreguntas[preguntaEditando] = { ...formPregunta };
+      toast.success("✏️ Pregunta actualizada");
     } else {
       nuevasPreguntas.push({ ...formPregunta });
+      toast.success("➕ Pregunta agregada");
     }
 
     setFormExamen({ ...formExamen, preguntas: nuevasPreguntas });
     setShowPreguntaModal(false);
   };
 
-  const eliminarPregunta = (index) => {
-    if (window.confirm("¿Eliminar esta pregunta?")) {
-      setFormExamen({
-        ...formExamen,
-        preguntas: formExamen.preguntas.filter((_, i) => i !== index),
-      });
-    }
+  const confirmarEliminarPregunta = (index) => {
+    setPreguntaAEliminar(index);
+    setShowDeleteModal(true);
+  };
+
+  const eliminarPregunta = () => {
+    setFormExamen({
+      ...formExamen,
+      preguntas: formExamen.preguntas.filter((_, i) => i !== preguntaAEliminar),
+    });
+    setShowDeleteModal(false);
+    setPreguntaAEliminar(null);
+    toast.info("🗑️ Pregunta eliminada");
   };
 
   const calcularPuntajeTotal = () => {
@@ -267,7 +304,9 @@ const FormularioExamen = () => {
           {esEdicion ? "Editar Examen" : "Crear Nuevo Examen"}
         </h2>
         <p className="text-muted">
-          {esEdicion ? "Modifica los detalles del examen" : "Completa los datos para crear un examen"}
+          {esEdicion
+            ? "Modifica los detalles del examen"
+            : "Completa los datos para crear un examen"}
         </p>
       </div>
 
@@ -294,7 +333,9 @@ const FormularioExamen = () => {
                 <Form.Label>Título *</Form.Label>
                 <Form.Control
                   value={formExamen.titulo}
-                  onChange={(e) => setFormExamen({ ...formExamen, titulo: e.target.value })}
+                  onChange={(e) =>
+                    setFormExamen({ ...formExamen, titulo: e.target.value })
+                  }
                   placeholder="Ej: Examen Final - Unidad 1"
                   required
                 />
@@ -306,7 +347,9 @@ const FormularioExamen = () => {
                   as="textarea"
                   rows={3}
                   value={formExamen.descripcion}
-                  onChange={(e) => setFormExamen({ ...formExamen, descripcion: e.target.value })}
+                  onChange={(e) =>
+                    setFormExamen({ ...formExamen, descripcion: e.target.value })
+                  }
                   placeholder="Breve descripción del examen..."
                 />
               </Form.Group>
@@ -315,7 +358,9 @@ const FormularioExamen = () => {
                 <Form.Label>Curso *</Form.Label>
                 <Form.Select
                   value={formExamen.cursoId}
-                  onChange={(e) => setFormExamen({ ...formExamen, cursoId: e.target.value })}
+                  onChange={(e) =>
+                    setFormExamen({ ...formExamen, cursoId: e.target.value })
+                  }
                   required
                 >
                   <option value="">Selecciona un curso</option>
@@ -334,7 +379,12 @@ const FormularioExamen = () => {
                     <Form.Control
                       type="datetime-local"
                       value={formExamen.fechaApertura}
-                      onChange={(e) => setFormExamen({ ...formExamen, fechaApertura: e.target.value })}
+                      onChange={(e) =>
+                        setFormExamen({
+                          ...formExamen,
+                          fechaApertura: e.target.value,
+                        })
+                      }
                       required
                     />
                   </Form.Group>
@@ -345,7 +395,12 @@ const FormularioExamen = () => {
                     <Form.Control
                       type="datetime-local"
                       value={formExamen.fechaCierre}
-                      onChange={(e) => setFormExamen({ ...formExamen, fechaCierre: e.target.value })}
+                      onChange={(e) =>
+                        setFormExamen({
+                          ...formExamen,
+                          fechaCierre: e.target.value,
+                        })
+                      }
                       required
                     />
                   </Form.Group>
@@ -378,24 +433,36 @@ const FormularioExamen = () => {
                           <div className="d-flex gap-2 mb-2">
                             <Badge bg="secondary">#{index + 1}</Badge>
                             <Badge bg="info">{pregunta.tipo}</Badge>
-                            <Badge bg="warning" text="dark">{pregunta.puntaje} pts</Badge>
+                            <Badge bg="warning" text="dark">
+                              {pregunta.puntaje} pts
+                            </Badge>
                           </div>
-                          <p className="mb-2"><strong>{pregunta.pregunta}</strong></p>
-                          
+                          <p className="mb-2">
+                            <strong>{pregunta.pregunta}</strong>
+                          </p>
+
                           {pregunta.tipo === "multiple" && (
                             <ul className="small mb-0">
                               {pregunta.opciones.map((opcion, i) => (
-                                <li key={i} className={opcion.esCorrecta ? "text-success fw-bold" : ""}>
+                                <li
+                                  key={i}
+                                  className={
+                                    opcion.esCorrecta
+                                      ? "text-success fw-bold"
+                                      : ""
+                                  }
+                                >
                                   {opcion.texto}
                                   {opcion.esCorrecta && " ✓"}
                                 </li>
                               ))}
                             </ul>
                           )}
-                          
+
                           {pregunta.tipo === "verdadero_falso" && (
                             <p className="small text-success mb-0">
-                              Respuesta correcta: <strong>{pregunta.respuestaCorrecta}</strong>
+                              Respuesta correcta:{" "}
+                              <strong>{pregunta.respuestaCorrecta}</strong>
                             </p>
                           )}
                         </div>
@@ -410,7 +477,7 @@ const FormularioExamen = () => {
                           <Button
                             variant="danger"
                             size="sm"
-                            onClick={() => eliminarPregunta(index)}
+                            onClick={() => confirmarEliminarPregunta(index)}
                           >
                             <FaTrash />
                           </Button>
@@ -556,7 +623,11 @@ const FormularioExamen = () => {
                 disabled={loading}
               >
                 <FaSave className="me-2" />
-                {esEdicion ? "Guardar y Publicar" : "Crear y Publicar"}
+                {loading
+                  ? "Guardando..."
+                  : esEdicion
+                  ? "Guardar y Publicar"
+                  : "Crear y Publicar"}
               </Button>
 
               <Button
@@ -564,12 +635,13 @@ const FormularioExamen = () => {
                 onClick={() => guardarExamen(false)}
                 disabled={loading}
               >
-                Guardar como Borrador
+                {loading ? "Guardando..." : "Guardar como Borrador"}
               </Button>
 
               <Button
                 variant="outline-secondary"
                 onClick={() => navigate("/dashboard/examenes")}
+                disabled={loading}
               >
                 <FaTimes className="me-2" />
                 Cancelar
@@ -580,7 +652,11 @@ const FormularioExamen = () => {
       </Row>
 
       {/* Modal de pregunta */}
-      <Modal show={showPreguntaModal} onHide={() => setShowPreguntaModal(false)} size="lg">
+      <Modal
+        show={showPreguntaModal}
+        onHide={() => setShowPreguntaModal(false)}
+        size="lg"
+      >
         <Modal.Header closeButton>
           <Modal.Title>
             {preguntaEditando !== null ? "Editar Pregunta" : "Nueva Pregunta"}
@@ -591,7 +667,9 @@ const FormularioExamen = () => {
             <Form.Label>Tipo de Pregunta</Form.Label>
             <Form.Select
               value={formPregunta.tipo}
-              onChange={(e) => setFormPregunta({ ...formPregunta, tipo: e.target.value })}
+              onChange={(e) =>
+                setFormPregunta({ ...formPregunta, tipo: e.target.value })
+              }
             >
               <option value="multiple">Opción Múltiple</option>
               <option value="verdadero_falso">Verdadero/Falso</option>
@@ -606,7 +684,9 @@ const FormularioExamen = () => {
               as="textarea"
               rows={3}
               value={formPregunta.pregunta}
-              onChange={(e) => setFormPregunta({ ...formPregunta, pregunta: e.target.value })}
+              onChange={(e) =>
+                setFormPregunta({ ...formPregunta, pregunta: e.target.value })
+              }
               placeholder="Escribe tu pregunta aquí..."
             />
           </Form.Group>
@@ -618,12 +698,16 @@ const FormularioExamen = () => {
                 <InputGroup key={index} className="mb-2">
                   <InputGroup.Checkbox
                     checked={opcion.esCorrecta}
-                    onChange={(e) => actualizarOpcion(index, "esCorrecta", e.target.checked)}
+                    onChange={(e) =>
+                      actualizarOpcion(index, "esCorrecta", e.target.checked)
+                    }
                     title="Marcar como correcta"
                   />
                   <Form.Control
                     value={opcion.texto}
-                    onChange={(e) => actualizarOpcion(index, "texto", e.target.value)}
+                    onChange={(e) =>
+                      actualizarOpcion(index, "texto", e.target.value)
+                    }
                     placeholder={`Opción ${index + 1}`}
                   />
                   {formPregunta.opciones.length > 2 && (
@@ -636,7 +720,11 @@ const FormularioExamen = () => {
                   )}
                 </InputGroup>
               ))}
-              <Button variant="outline-primary" size="sm" onClick={agregarOpcion}>
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={agregarOpcion}
+              >
                 <FaPlus className="me-1" />
                 Agregar Opción
               </Button>
@@ -649,7 +737,10 @@ const FormularioExamen = () => {
               <Form.Select
                 value={formPregunta.respuestaCorrecta}
                 onChange={(e) =>
-                  setFormPregunta({ ...formPregunta, respuestaCorrecta: e.target.value })
+                  setFormPregunta({
+                    ...formPregunta,
+                    respuestaCorrecta: e.target.value,
+                  })
                 }
               >
                 <option value="">Selecciona...</option>
@@ -659,10 +750,12 @@ const FormularioExamen = () => {
             </Form.Group>
           )}
 
-          {(formPregunta.tipo === "corta" || formPregunta.tipo === "desarrollo") && (
+          {(formPregunta.tipo === "corta" ||
+            formPregunta.tipo === "desarrollo") && (
             <Alert variant="info">
               <small>
-                Las preguntas de tipo "{formPregunta.tipo}" requieren calificación manual del docente.
+                Las preguntas de tipo "{formPregunta.tipo}" requieren
+                calificación manual del docente.
               </small>
             </Alert>
           )}
@@ -674,16 +767,51 @@ const FormularioExamen = () => {
               min="0.5"
               step="0.5"
               value={formPregunta.puntaje}
-              onChange={(e) => setFormPregunta({ ...formPregunta, puntaje: parseFloat(e.target.value) })}
+              onChange={(e) =>
+                setFormPregunta({
+                  ...formPregunta,
+                  puntaje: parseFloat(e.target.value),
+                })
+              }
             />
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowPreguntaModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowPreguntaModal(false)}
+          >
             Cancelar
           </Button>
           <Button variant="primary" onClick={guardarPregunta}>
             {preguntaEditando !== null ? "Actualizar" : "Agregar"} Pregunta
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal de confirmación para eliminar pregunta */}
+      <Modal
+        show={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        centered
+        size="sm"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmar eliminación</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>¿Estás seguro que deseas eliminar esta pregunta?</p>
+          <p className="text-muted small mb-0">
+            Esta acción no se puede deshacer.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={eliminarPregunta}>
+            <FaTrash className="me-2" />
+            Eliminar
           </Button>
         </Modal.Footer>
       </Modal>

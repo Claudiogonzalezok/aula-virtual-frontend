@@ -172,9 +172,9 @@ function App() {
             <Route
               path="clases"
               element={
-                <DocenteRoute>
+                <ProtectedRoute>
                   <MisClases />
-                </DocenteRoute>
+                </ProtectedRoute>
               }
             />
 

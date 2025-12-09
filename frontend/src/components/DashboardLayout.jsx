@@ -1,3 +1,4 @@
+// frontend/src/components/DashboardLayout.jsx
 import { useContext, useState } from "react";
 import { Outlet, Navigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
@@ -20,6 +21,7 @@ import {
   BsPersonCircle,
   BsClipboardPlus,
   BsInboxes,
+  BsCameraVideo,
 } from "react-icons/bs";
 
 const DashboardLayout = () => {
@@ -64,10 +66,11 @@ const DashboardLayout = () => {
         return [
           { to: "/dashboard", icon: <BsHouseDoor />, label: "Inicio" },
           { to: "/dashboard/cursos", icon: <BsBook />, label: "Mis Cursos" },
-          { to: "/dashboard/inscripcion", icon: <BsClipboardPlus />, label: "Inscripción" },
+          { to: "/dashboard/clases", icon: <BsCameraVideo />, label: "Mis Clases" }, // ← NUEVO
           { to: "/dashboard/mis-tareas", icon: <BsClipboard2Check />, label: "Mis Tareas" },
           { to: "/dashboard/examenes", icon: <BsClipboardCheck />, label: "Exámenes" },
           { to: "/dashboard/notas", icon: <BsCardChecklist />, label: "Mis Notas" },
+          { to: "/dashboard/inscripcion", icon: <BsClipboardPlus />, label: "Inscripción" },          
           { to: "/dashboard/mensajes", icon: <BsEnvelope />, label: "Mensajes" },
           { to: "/dashboard/notificaciones", icon: <BsBell />, label: "Notificaciones" },
           { to: "/dashboard/perfil", icon: <BsPersonCircle />, label: "Mi Perfil" },

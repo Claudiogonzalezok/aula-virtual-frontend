@@ -51,7 +51,7 @@ Interfaz de usuario para el sistema de gestión de aulas virtuales desarrollada 
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/aula-virtual.git
+git clone https://github.com/Claudiogonzalezok/aula-virtual-frontend.git
 
 # Navegar al directorio del frontend
 cd aula-virtual/frontend

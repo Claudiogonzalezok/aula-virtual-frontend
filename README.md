@@ -54,7 +54,7 @@ Interfaz de usuario para el sistema de gestión de aulas virtuales desarrollada 
 git clone https://github.com/Claudiogonzalezok/aula-virtual-frontend.git
 
 # Navegar al directorio del frontend
-cd aula-virtual/frontend
+cd aula-virtual-frontend/frontend
 
 # Instalar dependencias
 npm install

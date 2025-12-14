@@ -32,6 +32,7 @@ import {
   FaBook,
   FaChalkboardTeacher,
   FaUserGraduate,
+  FaEye,
 } from "react-icons/fa";
 
 moment.locale("es");
@@ -383,9 +384,9 @@ const MisClases = () => {
                 <FaVideo className="me-1" /> Unirse a la clase
               </Button>
             )}
-            <Link to={`/dashboard/cursos/${clase.curso._id}`}>
+            <Link to={`/dashboard/clases/${clase._id}`}>
               <Button variant="outline-primary" size="sm">
-                <FaBook className="me-1" /> Ver Curso
+                <FaEye className="me-1" /> Ver Detalles
               </Button>
             </Link>
           </div>
@@ -434,17 +435,23 @@ const MisClases = () => {
             </small>
           </div>
 
-          {clase.tipo === "virtual" && clase.enlaceReunion && (
-            <Button
-              variant="warning"
-              size="sm"
-              href={clase.enlaceReunion}
-              target="_blank"
-              className="w-100"
-            >
-              <FaVideo className="me-1" /> Preparar enlace
-            </Button>
-          )}
+          <div className="d-flex gap-2 flex-wrap">
+            {clase.tipo === "virtual" && clase.enlaceReunion && (
+              <Button
+                variant="warning"
+                size="sm"
+                href={clase.enlaceReunion}
+                target="_blank"
+              >
+                <FaVideo className="me-1" /> Preparar enlace
+              </Button>
+            )}
+            <Link to={`/dashboard/clases/${clase._id}`}>
+              <Button variant="outline-secondary" size="sm">
+                <FaEye className="me-1" /> Ver
+              </Button>
+            </Link>
+          </div>
         </Card.Body>
       </Card>
     );
@@ -483,6 +490,12 @@ const MisClases = () => {
                 {getTipoIcono(clase.tipo)}
                 {clase.tipo}
               </small>
+              <br />
+              <Link to={`/dashboard/clases/${clase._id}`}>
+                <Button variant="link" size="sm" className="p-0 mt-1">
+                  Ver detalles
+                </Button>
+              </Link>
             </div>
           </div>
         </Card.Body>
@@ -862,9 +875,13 @@ const MisClases = () => {
                                   <FaVideo />
                                 </Button>
                               )}
-                            <Link to={`/dashboard/cursos/${clase.curso._id}`}>
-                              <Button variant="primary" size="sm">
-                                Ver
+                            <Link to={`/dashboard/clases/${clase._id}`}>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                title="Ver detalles"
+                              >
+                                <FaEye />
                               </Button>
                             </Link>
                           </div>
@@ -898,17 +915,8 @@ const MisClases = () => {
                   views={["month", "week", "day", "agenda"]}
                   defaultView="month"
                   onSelectEvent={(event) => {
-                    // Si está en curso y tiene enlace, abrir enlace
-                    const estado = calcularEstadoTiempo(event.resource);
-                    if (
-                      estado.tipo === "en_curso" &&
-                      event.resource.tipo === "virtual" &&
-                      event.resource.enlaceReunion
-                    ) {
-                      window.open(event.resource.enlaceReunion, "_blank");
-                    } else {
-                      window.location.href = `/dashboard/cursos/${event.resource.curso._id}`;
-                    }
+                    // Navegar al detalle de la clase
+                    window.location.href = `/dashboard/clases/${event.resource._id}`;
                   }}
                   popup
                 />
@@ -922,11 +930,9 @@ const MisClases = () => {
               <Row className="g-2">
                 <Col xs={12}>
                   <strong>Leyenda:</strong>
-                  {esAlumno && (
-                    <small className="text-muted ms-2">
-                      (Haz clic en una clase en curso para unirte)
-                    </small>
-                  )}
+                  <small className="text-muted ms-2">
+                    (Haz clic en una clase para ver sus detalles)
+                  </small>
                 </Col>
                 <Col xs={6} md={2}>
                   <Badge bg="success" className="me-2">
@@ -1064,7 +1070,7 @@ const MisClases = () => {
                                 <th>Clase</th>
                                 <th>Horario</th>
                                 <th>Tipo</th>
-                                {esAlumno && <th>Acción</th>}
+                                <th>Acciones</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1123,8 +1129,8 @@ const MisClases = () => {
                                         {clase.tipo}
                                       </Badge>
                                     </td>
-                                    {esAlumno && (
-                                      <td>
+                                    <td>
+                                      <div className="d-flex gap-1">
                                         {(esEnCurso || esProxima) &&
                                           clase.tipo === "virtual" &&
                                           clase.enlaceReunion && (
@@ -1137,13 +1143,24 @@ const MisClases = () => {
                                               size="sm"
                                               href={clase.enlaceReunion}
                                               target="_blank"
+                                              title="Unirse"
                                             >
-                                              <FaVideo className="me-1" />
-                                              {esEnCurso ? "Unirse" : "Enlace"}
+                                              <FaVideo />
                                             </Button>
                                           )}
-                                      </td>
-                                    )}
+                                        <Link
+                                          to={`/dashboard/clases/${clase._id}`}
+                                        >
+                                          <Button
+                                            variant="outline-primary"
+                                            size="sm"
+                                            title="Ver detalles"
+                                          >
+                                            <FaEye />
+                                          </Button>
+                                        </Link>
+                                      </div>
+                                    </td>
                                   </tr>
                                 );
                               })}

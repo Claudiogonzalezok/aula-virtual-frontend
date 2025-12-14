@@ -28,6 +28,7 @@ import CourseDetail from "./pages/Cursos/CourseDetail";
 
 // Gestión de Clases
 import MisClases from "./pages/Clases/MisClases";
+import DetalleClase from "./pages/Clases/DetalleClase";
 
 // Gestión de Exámenes
 import ListaExamenes from "./pages/Examenes/ListaExamenes";
@@ -177,6 +178,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="clases/:id" element={<DetalleClase />} />
 
             {/* ========== GESTIÓN DE EXÁMENES ========== */}
             {/* Lista de exámenes - Todos los roles */}

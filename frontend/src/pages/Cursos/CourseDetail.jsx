@@ -19,6 +19,10 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import GestionInscripciones from "./GestionInscripciones";
 import { usePermissions } from "../../hooks/usePermissions";
+import {
+  formatearFechaCorta,
+  formatearParaInput,
+} from "../../utils/dateUtils";
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -100,7 +104,7 @@ const CourseDetail = () => {
       setFormClase({
         titulo: clase.titulo,
         descripcion: clase.descripcion,
-        fecha: clase.fecha?.split("T")[0] || "",
+        fecha: formatearParaInput(clase.fecha), // CORREGIDO
         horaInicio: clase.horario?.inicio || clase.horaInicio || "",
         horaFin: clase.horario?.fin || clase.horaFin || "",
         tipo: clase.ubicacion?.tipo || clase.tipo || "virtual",
@@ -123,7 +127,7 @@ const CourseDetail = () => {
     setShowModal(true);
   };
 
-  // 🆕 Validar formulario antes de enviar
+  // Validar formulario antes de enviar
   const validarFormulario = () => {
     const errores = [];
     const ahora = new Date();
@@ -167,11 +171,11 @@ const CourseDetail = () => {
     // Validar que la fecha esté dentro del rango del curso
     if (formClase.fecha) {
       if (fechaSeleccionada < fechaInicioCurso) {
-        errores.push(`La fecha debe ser posterior al inicio del curso (${formatearFecha(curso.fechaInicio)})`);
+        errores.push(`La fecha debe ser posterior al inicio del curso (${formatearFechaCorta(curso.fechaInicio)})`);
       }
 
       if (fechaSeleccionada > fechaFinCurso) {
-        errores.push(`La fecha debe ser anterior al fin del curso (${formatearFecha(curso.fechaFin)})`);
+        errores.push(`La fecha debe ser anterior al fin del curso (${formatearFechaCorta(curso.fechaFin)})`);
       }
     }
 
@@ -274,15 +278,6 @@ const CourseDetail = () => {
     }
   };
 
-  // Formatear fecha
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
   // Badge de estado
   const getBadgeEstado = (estado) => {
     if (!estado) return "primary";
@@ -295,16 +290,16 @@ const CourseDetail = () => {
     return badges[estado] || "secondary";
   };
 
-  // 🆕 Obtener fecha mínima para el input (hoy)
+  // Obtener fecha mínima para el input (hoy)
   const obtenerFechaMinima = () => {
     const hoy = new Date();
     return hoy.toISOString().split('T')[0];
   };
 
-  // 🆕 Obtener fecha máxima (fin del curso)
+  // Obtener fecha máxima (fin del curso)
   const obtenerFechaMaxima = () => {
     if (!curso?.fechaFin) return "";
-    return new Date(curso.fechaFin).toISOString().split('T')[0];
+    return formatearParaInput(curso.fechaFin);
   };
 
   if (loading) {
@@ -380,10 +375,10 @@ const CourseDetail = () => {
                     </Col>
                     <Col md={6}>
                       <p>
-                        <strong>📅 Inicio:</strong> {formatearFecha(curso.fechaInicio)}
+                        <strong>📅 Inicio:</strong> {formatearFechaCorta(curso.fechaInicio)}
                       </p>
                       <p>
-                        <strong>📅 Fin:</strong> {formatearFecha(curso.fechaFin)}
+                        <strong>📅 Fin:</strong> {formatearFechaCorta(curso.fechaFin)}
                       </p>
                       <p>
                         <strong>⏱️ Duración:</strong> {curso.duracionHoras} horas
@@ -457,7 +452,7 @@ const CourseDetail = () => {
                   <tr key={clase._id}>
                     <td>{index + 1}</td>
                     <td>{clase.titulo}</td>
-                    <td>{formatearFecha(clase.fecha)}</td>
+                    <td>{formatearFechaCorta(clase.fecha)}</td>
                     <td>
                       {clase.horario?.inicio || clase.horaInicio} - {clase.horario?.fin || clase.horaFin}
                     </td>
@@ -598,7 +593,7 @@ const CourseDetail = () => {
             <Modal.Title>{claseActual ? "Editar Clase" : "Nueva Clase"}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {/* 🆕 Mostrar errores de validación */}
+            {/* Mostrar errores de validación */}
             {erroresValidacion.length > 0 && (
               <Alert variant="danger" onClose={() => setErroresValidacion([])} dismissible>
                 <Alert.Heading>Por favor corrige los siguientes errores:</Alert.Heading>
@@ -645,7 +640,7 @@ const CourseDetail = () => {
                       required
                     />
                     <Form.Text className="text-muted">
-                      Entre {formatearFecha(curso.fechaInicio)} y {formatearFecha(curso.fechaFin)}
+                      Entre {formatearFechaCorta(curso.fechaInicio)} y {formatearFechaCorta(curso.fechaFin)}
                     </Form.Text>
                   </Form.Group>
                 </Col>

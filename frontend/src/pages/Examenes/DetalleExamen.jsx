@@ -16,7 +16,7 @@ import {
   Tabs,
   Tab
 } from "react-bootstrap";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { obtenerExamen, eliminarExamen } from "../../services/examenService";
 import {
@@ -30,10 +30,10 @@ import {
   FaTimesCircle,
   FaQuestionCircle,
   FaBook,
-  FaCalendarAlt,
   FaUsers,
   FaTrophy
 } from "react-icons/fa";
+import { formatearFechaHoraCompleta, examenDisponible } from "../../utils/dateUtils";
 
 const DetalleExamen = () => {
   const { id } = useParams();
@@ -79,22 +79,9 @@ const DetalleExamen = () => {
     }
   };
 
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   const estaDisponible = () => {
     if (!examen) return false;
-    const ahora = new Date();
-    const apertura = new Date(examen.fechaApertura);
-    const cierre = new Date(examen.fechaCierre);
-    return ahora >= apertura && ahora <= cierre && examen.estado === "publicado";
+    return examenDisponible(examen.fechaApertura, examen.fechaCierre, examen.estado);
   };
 
   const getBadgeEstado = (estado) => {
@@ -242,11 +229,11 @@ const DetalleExamen = () => {
 
                 <div className="mb-2">
                   <strong>📅 Fecha de Apertura:</strong>
-                  <p className="mb-0">{formatearFecha(examen.fechaApertura)}</p>
+                  <p className="mb-0">{formatearFechaHoraCompleta(examen.fechaApertura)}</p>
                 </div>
                 <div>
                   <strong>🔒 Fecha de Cierre:</strong>
-                  <p className="mb-0">{formatearFecha(examen.fechaCierre)}</p>
+                  <p className="mb-0">{formatearFechaHoraCompleta(examen.fechaCierre)}</p>
                 </div>
 
                 {examen.configuracion?.mostrarRespuestas && (
@@ -288,7 +275,7 @@ const DetalleExamen = () => {
                             </td>
                             <td>
                               {intento.fechaEntrega
-                                ? formatearFecha(intento.fechaEntrega)
+                                ? formatearFechaHoraCompleta(intento.fechaEntrega)
                                 : "En progreso"}
                             </td>
                             <td>
@@ -511,11 +498,11 @@ const DetalleExamen = () => {
                       </div>
                       <div className="mb-3">
                         <strong>📅 Fecha Apertura:</strong>
-                        <p className="mb-0">{formatearFecha(examen.fechaApertura)}</p>
+                        <p className="mb-0">{formatearFechaHoraCompleta(examen.fechaApertura)}</p>
                       </div>
                       <div className="mb-3">
                         <strong>🔒 Fecha Cierre:</strong>
-                        <p className="mb-0">{formatearFecha(examen.fechaCierre)}</p>
+                        <p className="mb-0">{formatearFechaHoraCompleta(examen.fechaCierre)}</p>
                       </div>
                     </Col>
                     <Col md={6}>
@@ -570,7 +557,7 @@ const DetalleExamen = () => {
                         </ListGroup.Item>
                         <ListGroup.Item>
                           <strong>Creado:</strong>{" "}
-                          {formatearFecha(examen.createdAt)}
+                          {formatearFechaHoraCompleta(examen.createdAt)}
                         </ListGroup.Item>
                       </ListGroup>
                     </Col>
@@ -729,7 +716,7 @@ const DetalleExamen = () => {
                           </td>
                           <td>
                             {intento.fechaEntrega
-                              ? formatearFecha(intento.fechaEntrega)
+                              ? formatearFechaHoraCompleta(intento.fechaEntrega)
                               : "En progreso"}
                           </td>
                           <td>

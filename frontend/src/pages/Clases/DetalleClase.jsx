@@ -45,6 +45,12 @@ import {
   FaSave,
   FaBan,
 } from "react-icons/fa";
+import {
+  formatearFechaLarga,
+  formatearFechaCorta,
+  formatearParaInput,
+  combinarFechaHora,
+} from "../../utils/dateUtils";
 
 const DetalleClase = () => {
   const { id } = useParams();
@@ -106,11 +112,11 @@ const DetalleClase = () => {
     try {
       const { data } = await API.get(`/clases/${id}`);
       setClase(data);
-      // Inicializar formulario de edición
+      // Inicializar formulario de edición con fecha corregida
       setFormEdicion({
         titulo: data.titulo || "",
         descripcion: data.descripcion || "",
-        fecha: data.fecha ? data.fecha.split("T")[0] : "",
+        fecha: formatearParaInput(data.fecha),
         horaInicio: data.horaInicio || "",
         horaFin: data.horaFin || "",
         tipo: data.tipo || "virtual",
@@ -128,17 +134,14 @@ const DetalleClase = () => {
   };
 
   // ============================================
-  // HELPERS DE TIEMPO Y ESTADO
+  // HELPERS DE TIEMPO Y ESTADO (CORREGIDOS)
   // ============================================
 
   const obtenerFechaHora = (tipo) => {
     if (!clase) return new Date();
-    const fecha = new Date(clase.fecha);
-    const [horas, minutos] = (
-      tipo === "inicio" ? clase.horaInicio : clase.horaFin
-    ).split(":");
-    fecha.setHours(parseInt(horas), parseInt(minutos), 0, 0);
-    return fecha;
+    // Usar la función corregida que combina fecha y hora
+    const hora = tipo === "inicio" ? clase.horaInicio : clase.horaFin;
+    return combinarFechaHora(clase.fecha, hora);
   };
 
   const calcularEstadoTiempo = () => {
@@ -185,25 +188,8 @@ const DetalleClase = () => {
   const estadoTiempo = calcularEstadoTiempo();
 
   // ============================================
-  // FORMATEO
+  // FORMATEO (usando utilidades corregidas)
   // ============================================
-
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString("es-AR", {
-      weekday: "long",
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  const formatearFechaCorta = (fecha) => {
-    return new Date(fecha).toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
 
   const calcularDuracion = () => {
     if (!clase) return "0";
@@ -309,7 +295,7 @@ const DetalleClase = () => {
     setFormEdicion({
       titulo: clase.titulo || "",
       descripcion: clase.descripcion || "",
-      fecha: clase.fecha ? clase.fecha.split("T")[0] : "",
+      fecha: formatearParaInput(clase.fecha),
       horaInicio: clase.horaInicio || "",
       horaFin: clase.horaFin || "",
       tipo: clase.tipo || "virtual",
@@ -599,7 +585,7 @@ const DetalleClase = () => {
                       Fecha:
                     </strong>
                     <p className="mb-0 ms-4 text-capitalize">
-                      {formatearFecha(clase.fecha)}
+                      {formatearFechaLarga(clase.fecha)}
                     </p>
                   </div>
 

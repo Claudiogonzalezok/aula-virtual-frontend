@@ -12,6 +12,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import API from "../../services/api";
 import { FaArrowLeft, FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa";
+import { formatearFechaHoraCompleta } from "../../utils/dateUtils";
 
 const VerIntento = () => {
   const { id, intentoId } = useParams();
@@ -64,16 +65,6 @@ const VerIntento = () => {
     ) : (
       <FaTimesCircle className="text-danger" />
     );
-  };
-
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   if (loading) {
@@ -152,7 +143,7 @@ const VerIntento = () => {
             <Col md={6}>
               <p>
                 <strong>Fecha de Entrega:</strong>{" "}
-                {intento.fechaEntrega ? formatearFecha(intento.fechaEntrega) : "En progreso"}
+                {intento.fechaEntrega ? formatearFechaHoraCompleta(intento.fechaEntrega) : "En progreso"}
               </p>
               <p>
                 <strong>Tiempo Transcurrido:</strong>{" "}

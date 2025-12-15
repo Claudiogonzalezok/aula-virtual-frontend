@@ -12,6 +12,7 @@ import {
   Tab,
   Form,
   Alert,
+  Modal,
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -33,7 +34,14 @@ import {
   FaChalkboardTeacher,
   FaUserGraduate,
   FaEye,
+  FaPlus,
+  FaSave,
 } from "react-icons/fa";
+import {
+  formatearFechaCorta,
+  combinarFechaHora,
+  esHoy,
+} from "../../utils/dateUtils";
 
 moment.locale("es");
 const localizer = momentLocalizer(moment);
@@ -48,9 +56,25 @@ const MisClases = () => {
   const [cursos, setCursos] = useState([]);
   const [ahora, setAhora] = useState(new Date());
 
+  // Modal Nueva Clase
+  const [showNuevaClaseModal, setShowNuevaClaseModal] = useState(false);
+  const [guardandoClase, setGuardandoClase] = useState(false);
+  const [nuevaClase, setNuevaClase] = useState({
+    curso: "",
+    titulo: "",
+    descripcion: "",
+    fecha: "",
+    horaInicio: "",
+    horaFin: "",
+    tipo: "virtual",
+    enlaceReunion: "",
+    contenido: "",
+  });
+
   const esDocente = usuario?.rol === "docente";
   const esAlumno = usuario?.rol === "alumno";
   const esAdmin = usuario?.rol === "admin";
+  const puedeCrearClase = esDocente || esAdmin;
 
   // Actualizar "ahora" cada minuto
   useEffect(() => {
@@ -102,16 +126,13 @@ const MisClases = () => {
   };
 
   // ============================================
-  // HELPERS PARA TIEMPO Y ESTADO
+  // HELPERS PARA TIEMPO Y ESTADO (CORREGIDOS)
   // ============================================
 
   const obtenerFechaHora = (clase, tipo) => {
-    const fecha = new Date(clase.fecha);
-    const [horas, minutos] = (
-      tipo === "inicio" ? clase.horaInicio : clase.horaFin
-    ).split(":");
-    fecha.setHours(parseInt(horas), parseInt(minutos), 0, 0);
-    return fecha;
+    // Usar función corregida de dateUtils
+    const hora = tipo === "inicio" ? clase.horaInicio : clase.horaFin;
+    return combinarFechaHora(clase.fecha, hora);
   };
 
   const calcularEstadoTiempo = (clase) => {
@@ -153,12 +174,6 @@ const MisClases = () => {
     }
 
     return { tipo: "programada", minutosRestantes: null };
-  };
-
-  const esHoy = (fecha) => {
-    const hoy = new Date();
-    const fechaClase = new Date(fecha);
-    return fechaClase.toDateString() === hoy.toDateString();
   };
 
   // ============================================
@@ -217,16 +232,8 @@ const MisClases = () => {
   };
 
   // ============================================
-  // FORMATEO
+  // BADGES Y HELPERS UI
   // ============================================
-
-  const formatearFechaCorta = (fecha) => {
-    return new Date(fecha).toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
 
   const getBadgeEstado = (estado) => {
     const badges = {
@@ -248,6 +255,77 @@ const MisClases = () => {
         return <FaUsers className="me-1" />;
       default:
         return null;
+    }
+  };
+
+  // ============================================
+  // NUEVA CLASE
+  // ============================================
+
+  const abrirModalNuevaClase = (cursoIdPreseleccionado = "") => {
+    setNuevaClase({
+      curso: cursoIdPreseleccionado,
+      titulo: "",
+      descripcion: "",
+      fecha: "",
+      horaInicio: "",
+      horaFin: "",
+      tipo: "virtual",
+      enlaceReunion: "",
+      contenido: "",
+    });
+    setShowNuevaClaseModal(true);
+  };
+
+  const guardarNuevaClase = async () => {
+    // Validaciones
+    if (!nuevaClase.curso) {
+      toast.warning("Debes seleccionar un curso");
+      return;
+    }
+    if (!nuevaClase.titulo.trim()) {
+      toast.warning("El título es requerido");
+      return;
+    }
+    if (!nuevaClase.fecha) {
+      toast.warning("La fecha es requerida");
+      return;
+    }
+    if (!nuevaClase.horaInicio || !nuevaClase.horaFin) {
+      toast.warning("El horario es requerido");
+      return;
+    }
+    if (nuevaClase.horaInicio >= nuevaClase.horaFin) {
+      toast.warning("La hora de inicio debe ser anterior a la hora de fin");
+      return;
+    }
+
+    setGuardandoClase(true);
+    try {
+      const datosClase = {
+        cursoId: nuevaClase.curso, // CORREGIDO: era "curso", debe ser "cursoId"
+        titulo: nuevaClase.titulo,
+        descripcion: nuevaClase.descripcion,
+        fecha: nuevaClase.fecha,
+        horario: {
+          inicio: nuevaClase.horaInicio,
+          fin: nuevaClase.horaFin,
+        },
+        ubicacion: {
+          tipo: nuevaClase.tipo,
+          enlace: nuevaClase.enlaceReunion,
+        },
+        contenido: nuevaClase.contenido,
+      };
+
+      await API.post("/clases", datosClase);
+      toast.success("✅ Clase creada correctamente");
+      setShowNuevaClaseModal(false);
+      cargarClases();
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Error al crear la clase");
+    } finally {
+      setGuardandoClase(false);
     }
   };
 
@@ -567,21 +645,30 @@ const MisClases = () => {
 
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="fw-bold">
-          {esAlumno ? (
-            <>
-              <FaUserGraduate className="me-2" /> Mis Clases
-            </>
-          ) : (
-            <>📚 Mis Clases</>
-          )}
-        </h2>
-        <p className="text-muted">
-          {esAlumno
-            ? "Visualiza las clases de tus cursos y accede a las sesiones virtuales"
-            : "Visualiza y gestiona todas tus clases programadas"}
-        </p>
+      <div className="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <h2 className="fw-bold">
+            {esAlumno ? (
+              <>
+                <FaUserGraduate className="me-2" /> Mis Clases
+              </>
+            ) : (
+              <>📚 Mis Clases</>
+            )}
+          </h2>
+          <p className="text-muted">
+            {esAlumno
+              ? "Visualiza las clases de tus cursos y accede a las sesiones virtuales"
+              : "Visualiza y gestiona todas tus clases programadas"}
+          </p>
+        </div>
+        
+        {puedeCrearClase && (
+          <Button variant="success" onClick={() => abrirModalNuevaClase()}>
+            <FaPlus className="me-2" />
+            Nueva Clase
+          </Button>
+        )}
       </div>
 
       {/* ============================================ */}
@@ -762,6 +849,11 @@ const MisClases = () => {
               <Card.Body className="text-center text-muted py-5">
                 <h5>No hay clases que coincidan con los filtros</h5>
                 <p>Prueba ajustando los filtros</p>
+                {puedeCrearClase && (
+                  <Button variant="success" onClick={() => abrirModalNuevaClase()}>
+                    <FaPlus className="me-1" /> Crear Primera Clase
+                  </Button>
+                )}
               </Card.Body>
             </Card>
           ) : (
@@ -915,7 +1007,6 @@ const MisClases = () => {
                   views={["month", "week", "day", "agenda"]}
                   defaultView="month"
                   onSelectEvent={(event) => {
-                    // Navegar al detalle de la clase
                     window.location.href = `/dashboard/clases/${event.resource._id}`;
                   }}
                   popup
@@ -1060,6 +1151,17 @@ const MisClases = () => {
                         {clasesCurso.length === 0 ? (
                           <div className="text-center text-muted py-3">
                             No hay clases que coincidan con los filtros
+                            {puedeCrearClase && (
+                              <div className="mt-2">
+                                <Button
+                                  variant="outline-success"
+                                  size="sm"
+                                  onClick={() => abrirModalNuevaClase(curso._id)}
+                                >
+                                  <FaPlus className="me-1" /> Agregar clase
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <Table striped hover responsive size="sm">
@@ -1184,6 +1286,210 @@ const MisClases = () => {
           )}
         </Tab>
       </Tabs>
+
+      {/* ============================================ */}
+      {/* MODAL NUEVA CLASE */}
+      {/* ============================================ */}
+
+      <Modal
+        show={showNuevaClaseModal}
+        onHide={() => setShowNuevaClaseModal(false)}
+        size="lg"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FaPlus className="me-2" />
+            Nueva Clase
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Curso <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Select
+                    value={nuevaClase.curso}
+                    onChange={(e) =>
+                      setNuevaClase({ ...nuevaClase, curso: e.target.value })
+                    }
+                  >
+                    <option value="">Seleccionar curso...</option>
+                    {cursos.map((curso) => (
+                      <option key={curso._id} value={curso._id}>
+                        {curso.codigo} - {curso.titulo}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Título <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Ej: Introducción a la programación"
+                    value={nuevaClase.titulo}
+                    onChange={(e) =>
+                      setNuevaClase({ ...nuevaClase, titulo: e.target.value })
+                    }
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Descripción</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={2}
+                    placeholder="Breve descripción de la clase..."
+                    value={nuevaClase.descripcion}
+                    onChange={(e) =>
+                      setNuevaClase({
+                        ...nuevaClase,
+                        descripcion: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Fecha <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={nuevaClase.fecha}
+                    onChange={(e) =>
+                      setNuevaClase({ ...nuevaClase, fecha: e.target.value })
+                    }
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Hora Inicio <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="time"
+                    value={nuevaClase.horaInicio}
+                    onChange={(e) =>
+                      setNuevaClase({
+                        ...nuevaClase,
+                        horaInicio: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Hora Fin <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="time"
+                    value={nuevaClase.horaFin}
+                    onChange={(e) =>
+                      setNuevaClase({ ...nuevaClase, horaFin: e.target.value })
+                    }
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Modalidad</Form.Label>
+                  <Form.Select
+                    value={nuevaClase.tipo}
+                    onChange={(e) =>
+                      setNuevaClase({ ...nuevaClase, tipo: e.target.value })
+                    }
+                  >
+                    <option value="virtual">Virtual</option>
+                    <option value="presencial">Presencial</option>
+                    <option value="hibrida">Híbrida</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              {(nuevaClase.tipo === "virtual" ||
+                nuevaClase.tipo === "hibrida") && (
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>
+                      <FaVideo className="me-1" /> Enlace de Reunión
+                    </Form.Label>
+                    <Form.Control
+                      type="url"
+                      placeholder="https://meet.google.com/..."
+                      value={nuevaClase.enlaceReunion}
+                      onChange={(e) =>
+                        setNuevaClase({
+                          ...nuevaClase,
+                          enlaceReunion: e.target.value,
+                        })
+                      }
+                    />
+                  </Form.Group>
+                </Col>
+              )}
+
+              <Col md={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Contenido de la Clase</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    placeholder="Temas a tratar, actividades, etc..."
+                    value={nuevaClase.contenido}
+                    onChange={(e) =>
+                      setNuevaClase({ ...nuevaClase, contenido: e.target.value })
+                    }
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowNuevaClaseModal(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="success"
+            onClick={guardarNuevaClase}
+            disabled={guardandoClase}
+          >
+            {guardandoClase ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Creando...
+              </>
+            ) : (
+              <>
+                <FaSave className="me-2" />
+                Crear Clase
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* ============================================ */}
       {/* CSS PERSONALIZADO */}

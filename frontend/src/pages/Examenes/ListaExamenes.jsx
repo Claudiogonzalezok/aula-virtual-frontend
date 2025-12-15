@@ -10,12 +10,12 @@ import {
   Row,
   Col,
   Form,
-  InputGroup,
 } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import API from "../../services/api";
-import { FaPlus, FaEye, FaEdit, FaTrash, FaChartBar, FaClock, FaSearch, FaFilter } from "react-icons/fa";
+import { FaPlus, FaEye, FaEdit, FaTrash, FaChartBar, FaSearch, FaFilter } from "react-icons/fa";
+import { formatearFechaHoraCompleta, examenDisponible } from "../../utils/dateUtils";
 
 const ListaExamenes = () => {
   const { usuario } = useContext(AuthContext);
@@ -85,21 +85,8 @@ const ListaExamenes = () => {
     return badges[estado] || "secondary";
   };
 
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   const estaDisponible = (examen) => {
-    const ahora = new Date();
-    const apertura = new Date(examen.fechaApertura);
-    const cierre = new Date(examen.fechaCierre);
-    return ahora >= apertura && ahora <= cierre && examen.estado === "publicado";
+    return examenDisponible(examen.fechaApertura, examen.fechaCierre, examen.estado);
   };
 
   const getEstadoParaAlumno = (examen) => {
@@ -120,6 +107,7 @@ const ListaExamenes = () => {
         bg: aprobado ? "success" : "danger" 
       };
     }
+    return { texto: "Desconocido", bg: "secondary" };
   };
 
   // Filtrar exámenes
@@ -327,8 +315,8 @@ const ListaExamenes = () => {
                     <hr />
 
                     <div className="small text-muted mb-3">
-                      <div>📅 Apertura: {formatearFecha(examen.fechaApertura)}</div>
-                      <div>🔒 Cierre: {formatearFecha(examen.fechaCierre)}</div>
+                      <div>📅 Apertura: {formatearFechaHoraCompleta(examen.fechaApertura)}</div>
+                      <div>🔒 Cierre: {formatearFechaHoraCompleta(examen.fechaCierre)}</div>
                     </div>
 
                     {disponible && intentosRestantes > 0 ? (
@@ -403,8 +391,8 @@ const ListaExamenes = () => {
                       <td className="text-center">
                         <Badge bg="info">{examen.preguntas.length}</Badge>
                       </td>
-                      <td>{formatearFecha(examen.fechaApertura)}</td>
-                      <td>{formatearFecha(examen.fechaCierre)}</td>
+                      <td>{formatearFechaHoraCompleta(examen.fechaApertura)}</td>
+                      <td>{formatearFechaHoraCompleta(examen.fechaCierre)}</td>
                       <td>
                         <Badge bg={getBadgeEstado(examen.estado)}>
                           {examen.estado}

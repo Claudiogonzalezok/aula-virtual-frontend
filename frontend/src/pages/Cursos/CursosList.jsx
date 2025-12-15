@@ -14,6 +14,7 @@ import {
 import API from "../../services/api";
 import { Link, useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import { formatearFechaCorta } from "../../utils/dateUtils";
 
 const CursosList = () => {
   const [cursos, setCursos] = useState([]);
@@ -25,7 +26,6 @@ const CursosList = () => {
   const { usuario } = useContext(AuthContext);
   const location = useLocation();
 
-  // Función para cargar cursos
   const cargarCursos = async () => {
     setLoading(true);
     try {
@@ -39,12 +39,10 @@ const CursosList = () => {
     }
   };
 
-  // Carga inicial
   useEffect(() => {
     cargarCursos();
   }, []);
 
-  // Mostrar toast si venimos de crear o editar
   useEffect(() => {
     if (location.state?.mensaje) {
       setToast({
@@ -56,7 +54,6 @@ const CursosList = () => {
     }
   }, [location.state]);
 
-  // Eliminar curso (solo admin)
   const eliminarCurso = async () => {
     if (!cursoSeleccionado) return;
     try {
@@ -72,20 +69,15 @@ const CursosList = () => {
     }
   };
 
-  // 🆕 Verificar si el usuario puede editar un curso específico
   const puedeEditarCurso = (curso) => {
     if (usuario?.rol === "admin") return true;
-    // Docentes NO pueden editar cursos (solo gestionar clases dentro del curso)
     return false;
   };
 
-  // 🆕 Verificar si el usuario puede eliminar un curso específico
   const puedeEliminarCurso = (curso) => {
-    // Solo admin puede eliminar
     return usuario?.rol === "admin";
   };
 
-  // Obtener badge de estado
   const getBadgeEstado = (estado) => {
     const badges = {
       activo: "success",
@@ -93,15 +85,6 @@ const CursosList = () => {
       finalizado: "dark",
     };
     return badges[estado] || "secondary";
-  };
-
-  // Formatear fecha
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
   };
 
   return (
@@ -127,7 +110,6 @@ const CursosList = () => {
           >
             🎴 Tarjetas
           </Button>
-          {/* Solo admin puede crear cursos */}
           {usuario?.rol === "admin" && (
             <Link to="/dashboard/cursos/nuevo">
               <Button variant="success" className="shadow-sm">
@@ -138,14 +120,12 @@ const CursosList = () => {
         </div>
       </div>
 
-      {/* Spinner de carga */}
       {loading ? (
         <div className="text-center my-5">
           <Spinner animation="border" variant="primary" />
         </div>
       ) : (
         <>
-          {/* Vista de Tabla */}
           {vistaTabla ? (
             <Table striped bordered hover responsive className="shadow-sm">
               <thead className="table-primary">
@@ -153,7 +133,6 @@ const CursosList = () => {
                   <th>Código</th>
                   <th>Título</th>
                   <th>Docente</th>
-                  {/* 🆕 Solo admin y docente ven cantidad de alumnos */}
                   {(usuario?.rol === "admin" || usuario?.rol === "docente") && (
                     <th>Alumnos</th>
                   )}
@@ -174,9 +153,7 @@ const CursosList = () => {
                 ) : (
                   cursos.map((curso) => (
                     <tr key={curso._id}>
-                      <td>
-                        <strong>{curso.codigo}</strong>
-                      </td>
+                      <td><strong>{curso.codigo}</strong></td>
                       <td>{curso.titulo}</td>
                       <td>{curso.docente?.nombre}</td>
                       {(usuario?.rol === "admin" || usuario?.rol === "docente") && (
@@ -184,21 +161,18 @@ const CursosList = () => {
                           <Badge bg="info">{curso.alumnos?.length || 0}</Badge>
                         </td>
                       )}
-                      <td>{formatearFecha(curso.fechaInicio)}</td>
+                      <td>{formatearFechaCorta(curso.fechaInicio)}</td>
                       <td>
                         <Badge bg={getBadgeEstado(curso.estado)}>
                           {curso.estado}
                         </Badge>
                       </td>
                       <td>
-                        {/* Botón VER - Todos pueden ver */}
                         <Link to={`/dashboard/cursos/${curso._id}`}>
                           <Button variant="info" size="sm" className="me-2">
                             👁️ Ver
                           </Button>
                         </Link>
-                        
-                        {/* Botón EDITAR - Solo admin */}
                         {puedeEditarCurso(curso) && (
                           <Link to={`/dashboard/cursos/editar/${curso._id}`}>
                             <Button variant="primary" size="sm" className="me-2">
@@ -206,8 +180,6 @@ const CursosList = () => {
                             </Button>
                           </Link>
                         )}
-                        
-                        {/* Botón ELIMINAR - Solo admin */}
                         {puedeEliminarCurso(curso) && (
                           <Button
                             variant="danger"
@@ -227,7 +199,6 @@ const CursosList = () => {
               </tbody>
             </Table>
           ) : (
-            /* Vista de Tarjetas */
             <Row>
               {cursos.length === 0 ? (
                 <Col xs={12} className="text-center text-muted my-5">
@@ -261,7 +232,6 @@ const CursosList = () => {
                               👨‍🏫 {curso.docente?.nombre}
                             </small>
                             <br />
-                            {/* 🆕 Solo admin y docente ven cantidad de alumnos */}
                             {(usuario?.rol === "admin" || usuario?.rol === "docente") && (
                               <>
                                 <small className="text-muted">
@@ -271,18 +241,15 @@ const CursosList = () => {
                               </>
                             )}
                             <small className="text-muted">
-                              📅 {formatearFecha(curso.fechaInicio)} - {formatearFecha(curso.fechaFin)}
+                              📅 {formatearFechaCorta(curso.fechaInicio)} - {formatearFechaCorta(curso.fechaFin)}
                             </small>
                           </div>
                           <div className="d-grid gap-2">
-                            {/* Botón VER - Todos pueden ver */}
                             <Link to={`/dashboard/cursos/${curso._id}`}>
                               <Button variant="info" size="sm" className="w-100">
                                 👁️ Ver Detalles
                               </Button>
                             </Link>
-                            
-                            {/* Botones EDITAR y ELIMINAR - Solo admin */}
                             {(puedeEditarCurso(curso) || puedeEliminarCurso(curso)) && (
                               <div className="d-flex gap-2">
                                 {puedeEditarCurso(curso) && (
@@ -319,7 +286,6 @@ const CursosList = () => {
         </>
       )}
 
-      {/* Modal de confirmación - Solo admin */}
       <Modal show={showConfirm} onHide={() => setShowConfirm(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Confirmar eliminación</Modal.Title>
@@ -342,7 +308,6 @@ const CursosList = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Toast de mensajes */}
       <ToastContainer position="top-end" className="p-3">
         <Toast
           bg={toast.tipo}

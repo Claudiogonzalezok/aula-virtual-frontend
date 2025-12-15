@@ -10,10 +10,11 @@ import {
   Alert,
   ProgressBar,
 } from "react-bootstrap";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import API from "../../services/api";
 import { FaArrowLeft, FaEdit, FaEye, FaCheckCircle, FaClock } from "react-icons/fa";
+import { formatearFechaHoraCompleta } from "../../utils/dateUtils";
 
 const EstadisticasExamen = () => {
   const { id } = useParams();
@@ -43,16 +44,6 @@ const EstadisticasExamen = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const getBadgeEstado = (intento) => {
@@ -151,7 +142,7 @@ const EstadisticasExamen = () => {
                 <strong>Intentos Permitidos:</strong> {examen.configuracion.intentosPermitidos}
               </p>
               <p>
-                <strong>Fecha Apertura:</strong> {formatearFecha(examen.fechaApertura)}
+                <strong>Fecha Apertura:</strong> {formatearFechaHoraCompleta(examen.fechaApertura)}
               </p>
             </Col>
           </Row>
@@ -325,7 +316,7 @@ const EstadisticasExamen = () => {
                       </td>
                       <td>
                         {intento.fechaEntrega
-                          ? formatearFecha(intento.fechaEntrega)
+                          ? formatearFechaHoraCompleta(intento.fechaEntrega)
                           : "En progreso"}
                       </td>
                       <td className="text-center">

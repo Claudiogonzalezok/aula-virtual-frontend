@@ -16,6 +16,7 @@ import { AuthContext } from "../../context/AuthContext";
 import API from "../../services/api";
 import { FaPlus, FaTrash, FaSave, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { isoToDatetimeLocal } from "../../utils/dateUtils";
 
 const FormularioExamen = () => {
   const { id } = useParams();
@@ -86,14 +87,9 @@ const FormularioExamen = () => {
         titulo: data.titulo,
         descripcion: data.descripcion || "",
         cursoId: data.curso._id,
-        fechaApertura:
-          data.fechaApertura?.split("T")[0] +
-          "T" +
-          data.fechaApertura?.split("T")[1]?.substring(0, 5),
-        fechaCierre:
-          data.fechaCierre?.split("T")[0] +
-          "T" +
-          data.fechaCierre?.split("T")[1]?.substring(0, 5),
+        // Usar función que convierte ISO a datetime-local correctamente
+        fechaApertura: isoToDatetimeLocal(data.fechaApertura),
+        fechaCierre: isoToDatetimeLocal(data.fechaCierre),
         configuracion: data.configuracion,
         preguntas: data.preguntas,
         estado: data.estado,
@@ -152,8 +148,12 @@ const FormularioExamen = () => {
 
     setLoading(true);
     try {
+      // Convertir las fechas del datetime-local a ISO para el backend
+      // El datetime-local da "2024-12-15T10:00", lo convertimos a Date y luego a ISO
       const datos = {
         ...formExamen,
+        fechaApertura: new Date(formExamen.fechaApertura).toISOString(),
+        fechaCierre: new Date(formExamen.fechaCierre).toISOString(),
         estado: publicar ? "publicado" : formExamen.estado,
       };
 

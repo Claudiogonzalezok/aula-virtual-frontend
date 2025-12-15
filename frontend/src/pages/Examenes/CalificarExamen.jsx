@@ -12,6 +12,7 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import { FaArrowLeft, FaSave, FaCheckCircle } from "react-icons/fa";
+import { formatearFechaHoraCompleta } from "../../utils/dateUtils";
 
 const CalificarExamen = () => {
   const { id, intentoId } = useParams();
@@ -182,7 +183,7 @@ const CalificarExamen = () => {
               </p>
               <p>
                 <strong>Fecha de Entrega:</strong>{" "}
-                {new Date(intento.fechaEntrega).toLocaleString("es-AR")}
+                {formatearFechaHoraCompleta(intento.fechaEntrega)}
               </p>
               <p>
                 <strong>Tiempo Transcurrido:</strong> {intento.tiempoTranscurrido} minutos
